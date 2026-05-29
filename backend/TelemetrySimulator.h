@@ -36,7 +36,7 @@ struct SimulationState
     QString warningMessage = "";
 };
 
-class TelemetrySimulator : public QObject, public IdataSource
+class TelemetrySimulator : public QObject, public IDataSource
 {
     Q_OBJECT
 

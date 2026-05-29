@@ -14,7 +14,7 @@ qt_add_executable(EV_HMI
 
     backend/VehicleData.cpp
     backend/TelemetrySimulator.cpp
-
+    backend/WarningManager.cpp
     
 )
 

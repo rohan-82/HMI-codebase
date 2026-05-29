@@ -70,16 +70,6 @@ void TelemetrySimulator::generateFakeData()
     else
         m_state.driveMode = "SPORT";
 
-    // Simulate warning message if motor temperature exceeds threshold
-    if (m_state.motorTemp > 55)
-    {
-        m_state.warningMessage =
-            "Motor Temperature High";
-    }
-    else
-    {
-        m_state.warningMessage = "";
-    }
     // Simulate indicator behavior
     static int indicatorCounter = 0;
 
@@ -111,7 +101,5 @@ void TelemetrySimulator::generateFakeData()
     m_vehicleData->setRightIndicator(m_state.rightIndicator);
 
     m_vehicleData->setHeadlights(m_state.headlights);
-
-    m_vehicleData->setWarningMessage(m_state.warningMessage);
 
 }
