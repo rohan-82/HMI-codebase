@@ -13,7 +13,17 @@ VehicleData::VehicleData(QObject *parent)
       m_gearState("P"),
       m_leftIndicator(false),
       m_rightIndicator(false),
+      m_hazardLights(false),
       m_headlights(false),
+      m_highBeam(false),
+      m_motorPower(0.0f),
+      m_regenLevel(0),
+      m_odometer(0.0f),
+      m_tripDistance(0.0f),
+      m_lowBatteryWarning(false),
+      m_motorOverTempWarning(false),
+      m_batteryOverTempWarning(false),
+      m_communicationFault(false),
       m_warningMessage("")
 {
 }
@@ -68,9 +78,59 @@ bool VehicleData::rightIndicator() const
     return m_rightIndicator;
 }
 
+bool VehicleData::hazardLights() const
+{
+    return m_hazardLights;
+}
+
 bool VehicleData::headlights() const
 {
     return m_headlights;
+}
+
+bool VehicleData::highBeam() const
+{
+    return m_highBeam;
+}
+
+float VehicleData::motorPower() const
+{
+    return m_motorPower;
+}
+
+int VehicleData::regenLevel() const
+{
+    return m_regenLevel;
+}
+
+float VehicleData::odometer() const
+{
+    return m_odometer;
+}
+
+float VehicleData::tripDistance() const
+{
+    return m_tripDistance;
+}
+
+bool VehicleData::lowBatteryWarning() const
+{
+    return m_lowBatteryWarning;
+}
+
+bool VehicleData::motorOverTempWarning() const
+{
+    return m_motorOverTempWarning;
+}
+
+bool VehicleData::batteryOverTempWarning() const
+{
+    return m_batteryOverTempWarning;
+}
+
+bool VehicleData::communicationFault() const
+{
+    return m_communicationFault;
 }
 
 QString VehicleData::warningMessage() const
@@ -86,6 +146,7 @@ void VehicleData::setRpm(int rpm)
     // Update the RPM value and emit the signal
     m_rpm = rpm;
     emit rpmChanged();
+    emit telemetryChanged();     // Notify that telemetry data has changed
 }
 
 void VehicleData::setSpeed(int speed)
@@ -95,6 +156,7 @@ void VehicleData::setSpeed(int speed)
 
     m_speed = speed;
     emit speedChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setBatteryPercent(int batteryPercent)
@@ -104,6 +166,7 @@ void VehicleData::setBatteryPercent(int batteryPercent)
 
     m_batteryPercent = batteryPercent;
     emit batteryPercentChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setMotorTemp(int motorTemp)
@@ -113,6 +176,7 @@ void VehicleData::setMotorTemp(int motorTemp)
 
     m_motorTemp = motorTemp;
     emit motorTempChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setBatteryTemp(int batteryTemp)
@@ -122,6 +186,7 @@ void VehicleData::setBatteryTemp(int batteryTemp)
 
     m_batteryTemp = batteryTemp;
     emit batteryTempChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setRangeKm(int rangeKm)
@@ -131,6 +196,7 @@ void VehicleData::setRangeKm(int rangeKm)
 
     m_rangeKm = rangeKm;
     emit rangeKmChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setDriveMode(const QString &driveMode)
@@ -140,6 +206,7 @@ void VehicleData::setDriveMode(const QString &driveMode)
 
     m_driveMode = driveMode;
     emit driveModeChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setGearState(const QString &gearState)
@@ -149,6 +216,7 @@ void VehicleData::setGearState(const QString &gearState)
 
     m_gearState = gearState;
     emit gearStateChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setLeftIndicator(bool leftIndicator)
@@ -158,6 +226,7 @@ void VehicleData::setLeftIndicator(bool leftIndicator)
 
     m_leftIndicator = leftIndicator;
     emit leftIndicatorChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setRightIndicator(bool rightIndicator)
@@ -167,8 +236,18 @@ void VehicleData::setRightIndicator(bool rightIndicator)
 
     m_rightIndicator = rightIndicator;
     emit rightIndicatorChanged();
+    emit telemetryChanged();
 }
 
+void VehicleData::setHazardLights(bool hazardLights)
+{
+    if (m_hazardLights == hazardLights)
+        return;
+
+    m_hazardLights = hazardLights;
+    emit hazardLightsChanged();
+    emit telemetryChanged();
+}
 void VehicleData::setHeadlights(bool headlights)
 {
     if (m_headlights == headlights)
@@ -176,6 +255,97 @@ void VehicleData::setHeadlights(bool headlights)
 
     m_headlights = headlights;
     emit headlightsChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setHighBeam(bool highBeam)
+{
+    if (m_highBeam == highBeam)
+        return;
+
+    m_highBeam = highBeam;
+    emit highBeamChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setMotorPower(float motorPower)
+{
+    if (qFuzzyCompare(m_motorPower, motorPower))
+        return;
+
+    m_motorPower = motorPower;
+    emit motorPowerChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setRegenLevel(int regenLevel)
+{
+    if (m_regenLevel == regenLevel)
+        return;
+
+    m_regenLevel = regenLevel;
+    emit regenLevelChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setOdometer(float odometer)
+{
+    if (qFuzzyCompare(m_odometer, odometer))
+        return;
+
+    m_odometer = odometer;
+    emit odometerChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setTripDistance(float tripDistance)
+{
+    if (qFuzzyCompare(m_tripDistance, tripDistance))
+        return;
+
+    m_tripDistance = tripDistance;
+    emit tripDistanceChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setLowBatteryWarning(bool lowBatteryWarning)
+{
+    if (m_lowBatteryWarning == lowBatteryWarning)
+        return;
+
+    m_lowBatteryWarning = lowBatteryWarning;
+    emit lowBatteryWarningChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setMotorOverTempWarning(bool motorOverTempWarning)
+{
+    if (m_motorOverTempWarning == motorOverTempWarning)
+        return;
+
+    m_motorOverTempWarning = motorOverTempWarning;
+    emit motorOverTempWarningChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setBatteryOverTempWarning(bool batteryOverTempWarning)
+{
+    if (m_batteryOverTempWarning == batteryOverTempWarning)
+        return;
+
+    m_batteryOverTempWarning = batteryOverTempWarning;
+    emit batteryOverTempWarningChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setCommunicationFault(bool communicationFault)
+{
+    if (m_communicationFault == communicationFault)
+        return;
+
+    m_communicationFault = communicationFault;
+    emit communicationFaultChanged();
+    emit telemetryChanged();
 }
 
 void VehicleData::setWarningMessage(const QString &warningMessage)
@@ -185,4 +355,5 @@ void VehicleData::setWarningMessage(const QString &warningMessage)
 
     m_warningMessage = warningMessage;
     emit warningMessageChanged();
+    emit telemetryChanged();
 }

@@ -56,6 +56,9 @@ void TelemetrySimulator::generateFakeData()
     m_state.motorTemp = 35 + (m_state.speed / 4);
     m_state.batteryTemp = 30 + (m_state.speed / 8);
 
+    // Simulate motor power based on speed
+    m_state.motorPower = m_state.speed * 0.8f;
+
     // Simulate gear state based on speed
     if (m_state.speed == 0)
     m_state.gearState = "P";
@@ -69,6 +72,10 @@ void TelemetrySimulator::generateFakeData()
         m_state.driveMode = "CITY";
     else
         m_state.driveMode = "SPORT";
+
+    // Simulate odometer and trip distance
+    m_state.odometer += m_state.speed / 36000.0f;
+    m_state.tripDistance += m_state.speed / 36000.0f;
 
     // Simulate indicator behavior
     static int indicatorCounter = 0;
@@ -84,6 +91,10 @@ void TelemetrySimulator::generateFakeData()
     }
     // Simulate headlights turning on at higher speeds
     m_state.headlights =(m_state.speed > 60);
+
+    // Simulate regenerative braking levels based on speed
+    m_state.regenLevel = m_state.speed > 60 ? 3 :
+                         m_state.speed > 30 ? 2 : 1;
 
     m_vehicleData->setSpeed(m_state.speed);
     m_vehicleData->setRpm(m_state.rpm);

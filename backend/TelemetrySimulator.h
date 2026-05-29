@@ -32,7 +32,18 @@ struct SimulationState
     bool rightIndicator = false;
 
     bool headlights = false;
-
+    bool highBeam = false;
+    
+    float motorPower = 0.0f;
+    int regenLevel = 0;
+    
+    float odometer = 0.0f;
+    float tripDistance = 0.0f;
+    
+    bool lowBatteryWarning = false;
+    bool motorOverTempWarning = false;
+    bool batteryOverTempWarning = false;
+    bool communicationFault = false;
     QString warningMessage = "";
 };
 

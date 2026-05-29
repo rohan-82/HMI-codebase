@@ -29,9 +29,21 @@ class VehicleData : public QObject
 
     Q_PROPERTY(bool leftIndicator READ leftIndicator WRITE setLeftIndicator NOTIFY leftIndicatorChanged)
     Q_PROPERTY(bool rightIndicator READ rightIndicator WRITE setRightIndicator NOTIFY rightIndicatorChanged)
+    Q_PROPERTY(bool hazardLights READ hazardLights WRITE setHazardLights NOTIFY hazardLightsChanged)
 
     Q_PROPERTY(bool headlights READ headlights WRITE setHeadlights NOTIFY headlightsChanged)
+    Q_PROPERTY(bool highBeam READ highBeam WRITE setHighBeam NOTIFY highBeamChanged)
 
+    Q_PROPERTY(float motorPower READ motorPower WRITE setMotorPower NOTIFY motorPowerChanged)
+    Q_PROPERTY(int regenLevel READ regenLevel WRITE setRegenLevel NOTIFY regenLevelChanged)
+
+    Q_PROPERTY(float odometer READ odometer WRITE setOdometer NOTIFY odometerChanged)
+    Q_PROPERTY(float tripDistance READ tripDistance WRITE setTripDistance NOTIFY tripDistanceChanged)
+
+    Q_PROPERTY(bool lowBatteryWarning READ lowBatteryWarning WRITE setLowBatteryWarning NOTIFY lowBatteryWarningChanged)
+    Q_PROPERTY(bool motorOverTempWarning READ motorOverTempWarning WRITE setMotorOverTempWarning NOTIFY motorOverTempWarningChanged)
+    Q_PROPERTY(bool batteryOverTempWarning READ batteryOverTempWarning WRITE setBatteryOverTempWarning NOTIFY batteryOverTempWarningChanged)
+    Q_PROPERTY(bool communicationFault READ communicationFault WRITE setCommunicationFault NOTIFY communicationFaultChanged)
     Q_PROPERTY(QString warningMessage READ warningMessage WRITE setWarningMessage NOTIFY warningMessageChanged)
 
 public:
@@ -51,10 +63,23 @@ public:
 
     bool leftIndicator() const;
     bool rightIndicator() const;
-
+    bool hazardLights() const;
+    
     bool headlights() const;
+    bool highBeam() const;
 
+    float motorPower() const;
+    int regenLevel() const;
+
+    float odometer() const;
+    float tripDistance() const;
+
+    bool lowBatteryWarning() const;
+    bool motorOverTempWarning() const;
+    bool batteryOverTempWarning() const;
+    bool communicationFault() const;
     QString warningMessage() const;
+
     // Setter functions
     /*
     Receive new value
@@ -75,9 +100,21 @@ public:
 
     void setLeftIndicator(bool leftIndicator);
     void setRightIndicator(bool rightIndicator);
+    void setHazardLights(bool hazardLights);
 
     void setHeadlights(bool headlights);
+    void setHighBeam(bool highBeam);
 
+    void setMotorPower(float motorPower);
+    void setRegenLevel(int regenLevel);
+
+    void setOdometer(float odometer);
+    void setTripDistance(float tripDistance);
+
+    void setLowBatteryWarning(bool lowBatteryWarning);
+    void setMotorOverTempWarning(bool motorOverTempWarning);
+    void setBatteryOverTempWarning(bool batteryOverTempWarning);
+    void setCommunicationFault(bool communicationFault);
     void setWarningMessage(const QString &warningMessage);
 
 signals:
@@ -96,10 +133,24 @@ signals:
 
     void leftIndicatorChanged();
     void rightIndicatorChanged();
+    void hazardLightsChanged();
 
     void headlightsChanged();
+    void highBeamChanged();
 
+    void motorPowerChanged();
+    void regenLevelChanged();
+
+    void odometerChanged();
+    void tripDistanceChanged();
+
+    void lowBatteryWarningChanged();
+    void motorOverTempWarningChanged();
+    void batteryOverTempWarningChanged();
+    void communicationFaultChanged();
     void warningMessageChanged();
+    
+    void telemetryChanged();
 
 private:
     // Member variables to store the current state of the vehicle
@@ -117,9 +168,21 @@ private:
 
     bool m_leftIndicator;
     bool m_rightIndicator;
+    bool m_hazardLights;
 
     bool m_headlights;
+    bool m_highBeam;
 
+    float m_motorPower;
+    int m_regenLevel;
+
+    float m_odometer;
+    float m_tripDistance;
+
+    bool m_lowBatteryWarning;
+    bool m_motorOverTempWarning;
+    bool m_batteryOverTempWarning;
+    bool m_communicationFault;
     QString m_warningMessage;
 };
 
