@@ -1,15 +1,10 @@
 #include "TelemetrySimulator.h"
 #include "VehicleData.h"
 
-#include <QRandomGenerator>
-
 TelemetrySimulator::TelemetrySimulator(VehicleData *vehicleData,
                                        QObject *parent)
     : QObject(parent),
-      m_vehicleData(vehicleData),
-      m_fakeRpm(1000),
-      m_fakeSpeed(0),
-      m_fakeBattery(100)
+      m_vehicleData(vehicleData)
 {
     connect(&m_timer,
             &QTimer::timeout,
@@ -19,23 +14,63 @@ TelemetrySimulator::TelemetrySimulator(VehicleData *vehicleData,
 
 void TelemetrySimulator::start()
 {
-    m_timer.start(1000);
+    m_timer.start(100);
 }
 
 void TelemetrySimulator::generateFakeData()
 {
-    m_fakeRpm = QRandomGenerator::global()->bounded(1000, 7000);
+    if (m_state.accelerating)
+    {
+        m_state.speed += 1;
 
-    m_fakeSpeed = QRandomGenerator::global()->bounded(0, 120);
+        if (m_state.speed >= 120)
+            m_state.accelerating = false;
+    }
+    else
+    {
+        m_state.speed -= 1;
 
-    m_fakeBattery--;
+        if (m_state.speed <= 0)
+            m_state.accelerating = true;
+    }
+    // Simulate RPM based on speed
+    m_state.rpm = m_state.speed * 50;
 
-    if(m_fakeBattery < 0)
-        m_fakeBattery = 100;
+    if (m_state.speed > 0)
+    {
+    m_batteryCounter++;
 
-    m_vehicleData->setRpm(m_fakeRpm);
+    // Simulate battery drain and range reduction every 15 seconds
+    if (m_batteryCounter >= 1500)
+        {
+        m_batteryCounter = 0;
 
-    m_vehicleData->setSpeed(m_fakeSpeed);
+        if (m_state.batteryPercent > 0)
+            m_state.batteryPercent--;
 
-    m_vehicleData->setBatteryPercent(m_fakeBattery);
+        if (m_state.rangeKm > 0)
+            m_state.rangeKm--;
+        }
+    }
+    // Simulate temperature changes based on speed
+    m_state.motorTemp = 35 + (m_state.speed / 4);
+    m_state.batteryTemp = 30 + (m_state.speed / 8);
+
+    if (m_state.speed < 40)
+        m_state.driveMode = "ECO";
+    else if (m_state.speed < 80)
+        m_state.driveMode = "CITY";
+    else
+        m_state.driveMode = "SPORT";
+
+    m_vehicleData->setSpeed(m_state.speed);
+    m_vehicleData->setRpm(m_state.rpm);
+    m_vehicleData->setBatteryPercent(m_state.batteryPercent);
+
+    m_vehicleData->setMotorTemp(m_state.motorTemp);
+    m_vehicleData->setBatteryTemp(m_state.batteryTemp);
+
+    m_vehicleData->setRangeKm(m_state.rangeKm);
+
+    m_vehicleData->setDriveMode(m_state.driveMode);
 }

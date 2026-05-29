@@ -1,10 +1,30 @@
+// #FAKEVEHICLEDATA
+
 #ifndef TELEMETRYSIMULATOR_H
 #define TELEMETRYSIMULATOR_H
 
 #include <QObject>
 #include <QTimer>
-//Forward declaration to avoid unnecessary header inclusion
+#include <QString>
+
 class VehicleData;
+
+struct SimulationState
+{
+    int rpm = 0;
+    int speed = 0;
+
+    int batteryPercent = 100;
+
+    int motorTemp = 35;
+    int batteryTemp = 30;
+
+    int rangeKm = 180;
+
+    QString driveMode = "ECO";
+
+    bool accelerating = true;
+};
 
 class TelemetrySimulator : public QObject
 {
@@ -24,9 +44,8 @@ private:
 
     QTimer m_timer;
 
-    int m_fakeRpm;
-    int m_fakeSpeed;
-    int m_fakeBattery;
+    SimulationState m_state;
+    int m_batteryCounter = 0;
 };
 
 #endif // TELEMETRYSIMULATOR_H
