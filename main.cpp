@@ -55,7 +55,16 @@ int main(int argc, char *argv[])
         &musicPlayer
     );
 
+     #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
     engine.loadFromModule("EvHmi", "Main");
+    #else
+    engine.load(
+    QUrl::fromLocalFile(
+        QCoreApplication::applicationDirPath()
+        + "/EvHmi/qml/Main.qml"
+        )
+    );
+    #endif
 
     if (engine.rootObjects().isEmpty())
         return -1;
