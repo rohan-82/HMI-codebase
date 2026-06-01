@@ -32,8 +32,6 @@ class LocalMusicPlayer : public QObject
     Q_PROPERTY(QString artistName READ artistName NOTIFY artistNameChanged)
     Q_PROPERTY(QString albumName READ albumName NOTIFY albumNameChanged)
 
-    Q_PROPERTY(QString albumArtUrl READ albumArtUrl NOTIFY albumArtUrlChanged)
-
 public:
     explicit LocalMusicPlayer(QObject *parent = nullptr);
 
