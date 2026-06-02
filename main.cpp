@@ -6,6 +6,7 @@
 #include "backend/TelemetrySimulator.h"
 #include "backend/WarningManager.h"
 #include "backend/LocalMusicPlayer.h"
+#include "backend/TelemetryParser.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,6 +18,56 @@ int main(int argc, char *argv[])
     TelemetrySimulator simulator(&vehicleData);
 
     WarningManager warningManager(&vehicleData);
+
+    TelemetryParser parser(
+        &vehicleData
+    );
+
+    parser.parsePacket(
+        "SPD=75,"
+        "RPM=3200,"
+        "BAT=88,"
+        "RNG=160,"
+        "MT=45,"
+        "BT=35,"
+        "PWR=28,"
+        "MODE=SPORT,"
+        "GEAR=D"
+    );
+
+    QTimer::singleShot(
+        3000,
+        [&]()
+        {
+            parser.parsePacket(
+                "SPD=40,"
+                "RPM=1800,"
+                "BAT=87,"
+                "RNG=159,"
+                "MT=44,"
+                "BT=34,"
+                "MODE=CITY,"
+                "GEAR=D"
+            );
+        }
+    );
+
+    QTimer::singleShot(
+        6000,
+        [&]()
+        {
+            parser.parsePacket(
+                "SPD=90,"
+                "RPM=4000,"
+                "BAT=86,"
+                "RNG=158,"
+                "MT=50,"
+                "BT=38,"
+                "MODE=SPORT,"
+                "GEAR=D"
+            );
+        }
+    );
 
     // CONNECTS GO HERE
     QObject::connect(
@@ -40,7 +91,7 @@ int main(int argc, char *argv[])
         &WarningManager::evaluateWarnings
     );
 
-    simulator.start();
+    //simulator.start();
     musicPlayer.play();
 
     QQmlApplicationEngine engine;

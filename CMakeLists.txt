@@ -16,7 +16,7 @@ qt_add_executable(EV_HMI
     backend/TelemetrySimulator.cpp
     backend/WarningManager.cpp
     backend/LocalMusicPlayer.cpp
-    
+    backend/TelemetryParser.cpp
 )
 
 target_include_directories(EV_HMI PRIVATE
