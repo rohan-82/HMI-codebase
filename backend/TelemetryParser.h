@@ -10,13 +10,13 @@ class TelemetryParser : public QObject
     Q_OBJECT
 
 public:
-    explicit TelemetryParser(VehicleData *vehicleData,
-                             QObject *parent = nullptr);
+    explicit TelemetryParser(VehicleData *vehicleData, QObject *parent = nullptr);
 
+public slots:
     void parsePacket(const QString &packet);
 
 private:
     VehicleData *m_vehicleData;
 };
 
-#endif // TELEMETRYPARSER_H
+#endif

@@ -6,6 +6,9 @@
 #include "backend/TelemetrySimulator.h"
 #include "backend/WarningManager.h"
 #include "backend/LocalMusicPlayer.h"
+#include "backend/TelemetryParser.h"
+#include "backend/SerialManager.h"
+#include "backend/TelemetryLogger.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,10 +16,67 @@ int main(int argc, char *argv[])
 
     VehicleData vehicleData;
     LocalMusicPlayer musicPlayer;
+    SerialManager serialManager;
 
     TelemetrySimulator simulator(&vehicleData);
-
     WarningManager warningManager(&vehicleData);
+    TelemetryLogger telemetryLogger(&vehicleData);
+
+    TelemetryParser parser(&vehicleData);
+
+    // Low battery warning test
+    // QTimer::singleShot(
+    //     5000,
+    //     [&]()
+    //     {
+    //         parser.parsePacket(
+    //             "SPD=75,"
+    //             "RPM=3200,"
+    //             "BAT=15,"
+    //             "RNG=160,"
+    //             "MT=45,"
+    //             "BT=35,"
+    //             "MODE=SPORT,"
+    //             "GEAR=D"
+    //         );
+    //     }
+    // );
+
+    // // High motor temp warning test
+    // QTimer::singleShot(
+    //     10000,
+    //     [&]()
+    //     {
+    //         parser.parsePacket(
+    //             "SPD=75,"
+    //             "RPM=3200,"
+    //             "BAT=88,"
+    //             "RNG=160,"
+    //             "MT=70,"
+    //             "BT=35,"
+    //             "MODE=SPORT,"
+    //             "GEAR=D"
+    //         );
+    //     }
+    // );
+
+    // // High battery temp warning test
+    // QTimer::singleShot(
+    //     15000,
+    //     [&]()
+    //     {
+    //         parser.parsePacket(
+    //             "SPD=75,"
+    //             "RPM=3200,"
+    //             "BAT=88,"
+    //             "RNG=160,"
+    //             "MT=45,"
+    //             "BT=70,"
+    //             "MODE=SPORT,"
+    //             "GEAR=D"
+    //         );
+    //     }
+    // );
 
     // CONNECTS GO HERE
     QObject::connect(
@@ -38,6 +98,22 @@ int main(int argc, char *argv[])
         &VehicleData::batteryTempChanged,
         &warningManager,
         &WarningManager::evaluateWarnings
+    );
+
+    // QObject::connect(
+    //     &serialManager,
+    //     &SerialManager::packetReceived,
+    //     &parser,
+    //     &TelemetryParser::parsePacket
+    // );
+
+    QObject::connect(
+        &serialManager,
+        &SerialManager::packetReceived,
+        [](const QString &packet)
+        {
+            qDebug() << packet;
+        }
     );
 
     simulator.start();
