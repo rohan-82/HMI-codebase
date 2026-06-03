@@ -29,10 +29,10 @@ Item {
                     spacing: 20
 
                     Rectangle {
-                        width: 140
-                        height: 140
+                        width: 110
+                        height: 110
 
-                        radius: 14
+                        radius: 12
 
                         color: Colors.surfaceRaised
 
@@ -64,7 +64,7 @@ Item {
                             color: Colors.accentCity
 
                             font.family: Typography.family
-                            font.pixelSize: 54
+                            font.pixelSize: 46
                         }
                     }
 
@@ -191,7 +191,9 @@ Item {
                             width: 22
                             height: 22
 
-                            source: "qrc:/assets/icons/previous.png"
+                            source: Colors.dayNightMode === "day"
+                                     ? "qrc:/assets/icons/Light/MusicPage/previous.png"
+                                     : "qrc:/assets/icons/Dark/MusicPage/previous.png"
                         }
 
                         MouseArea {
@@ -218,8 +220,12 @@ Item {
                             height: 30
 
                             source: musicPlayer.isPlaying
-                                    ? "qrc:/assets/icons/pause.png"
-                                    : "qrc:/assets/icons/play.png"
+                                    ? Colors.dayNightMode === "day"
+                                      ? "qrc:/assets/icons/Light/MusicPage/pause.png"
+                                      : "qrc:/assets/icons/Dark/MusicPage/pause.png"
+                                    : Colors.dayNightMode === "day"
+                                      ? "qrc:/assets/icons/Light/MusicPage/play.png"
+                                      : "qrc:/assets/icons/Dark/MusicPage/play.png"
                         }
 
                         MouseArea {
@@ -246,7 +252,9 @@ Item {
                             width: 22
                             height: 22
 
-                            source: "qrc:/assets/icons/next.png"
+                            source: Colors.dayNightMode === "day"
+                                     ? "qrc:/assets/icons/Light/MusicPage/next.png"
+                                     : "qrc:/assets/icons/Dark/MusicPage/next.png"
                         }
 
                         MouseArea {
@@ -291,7 +299,9 @@ Item {
                                 width: 16
                                 height: 16
 
-                                source: "qrc:/assets/icons/shuffle.png"
+                                source: Colors.dayNightMode === "day"
+                                         ? "qrc:/assets/icons/Light/MusicPage/shuffle.png"
+                                         : "qrc:/assets/icons/Dark/MusicPage/shuffle.png"
                             }
 
                             Text {
@@ -332,7 +342,9 @@ Item {
                                 width: 16
                                 height: 16
 
-                                source: "qrc:/assets/icons/repeat.png"
+                                source: Colors.dayNightMode === "day"
+                                         ? "qrc:/assets/icons/Light/MusicPage/repeat.png"
+                                         : "qrc:/assets/icons/Dark/MusicPage/repeat.png"
                             }
 
                             Text {
@@ -424,7 +436,7 @@ Item {
                 }
 
                 Row {
-                    spacing: 10
+                    spacing: 12
 
                     Column {
                         spacing: 4
@@ -450,7 +462,7 @@ Item {
                         }
 
                         Rectangle {
-                            width: 42
+                            width: 46
                             height: 42
 
                             radius: 8
@@ -467,8 +479,8 @@ Item {
                                 height: 20
 
                                 source: musicPlayer.muted
-                                        ? "qrc:/assets/icons/volume-mute.png"
-                                        : "qrc:/assets/icons/volume-loud.png"
+                                        ? "qrc:/assets/icons/Dark/MusicPage/volume-mute.png"
+                                        : "qrc:/assets/icons/Dark/MusicPage/volume-loud.png"
                             }
 
                             MouseArea {
@@ -481,8 +493,8 @@ Item {
                     Slider {
                         orientation: Qt.Vertical
 
-                        width: 28
-                        height: 90
+                        width: 36
+                        height: 100
 
                         from: 0
                         to: 100
@@ -501,50 +513,51 @@ Item {
                     color: Colors.borderSubtle
                 }
 
-                Text {
-                    text: "Shuffle"
+                Row {
+                    width: parent.width
+                    spacing: 60 
 
-                    color: Colors.textSecondary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodySmall
-                }
-
-                Text {
-                    text: musicPlayer.shuffleEnabled
-                          ? "ON"
-                          : "OFF"
-
-                    color: Colors.textPrimary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodyLarge
+                    Column {
+                        width: parent.width * 0.5
+                        spacing: 2
+                        Text {
+                            text: "Shuffle"
+                            color: Colors.textSecondary
+                            font.family: Typography.family
+                            font.pixelSize: Typography.bodySmall
+                        }
+                        Text {
+                            text: musicPlayer.shuffleEnabled ? "ON" : "OFF"
+                            color: Colors.textPrimary
+                            font.family: Typography.family
+                            font.pixelSize: Typography.bodyLarge
+                        }
+                    }
+                    
+                    Column {
+                        width: parent.width * 0.5
+                        spacing: 2
+                        Text {
+                            horizontalAlignment: Text.AlignRight
+                            text: "Repeat" 
+                            color: Colors.textSecondary
+                            font.family: Typography.family
+                            font.pixelSize: Typography.bodySmall
+                        }
+                        Text {
+                            horizontalAlignment: Text.AlignRight 
+                            text: musicPlayer.repeatEnabled ? "ON" : "OFF"
+                            color: Colors.textPrimary
+                            font.family: Typography.family
+                            font.pixelSize: Typography.bodyLarge
+                        }
+                    }
                 }
 
                 Rectangle {
                     width: parent.width
                     height: 1
                     color: Colors.borderSubtle
-                }
-
-                Text {
-                    text: "Repeat"
-
-                    color: Colors.textSecondary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodySmall
-                }
-
-                Text {
-                    text: musicPlayer.repeatEnabled
-                          ? "ON"
-                          : "OFF"
-
-                    color: Colors.textPrimary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodyLarge
                 }
             }
         }

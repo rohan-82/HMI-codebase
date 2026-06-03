@@ -58,17 +58,81 @@ qt_add_resources(EV_HMI "assets"
 
     FILES
         assets/music/placeholder/default_cover.png
+    #Dark Theme
+        #Universal
+        assets/icons/Dark/Universal/home-main.png
+        assets/icons/Dark/Universal/music-main.png
+        assets/icons/Dark/Universal/diagnostics-main.png
+        assets/icons/Dark/Universal/settings-main.png
 
-        assets/icons/play.png
-        assets/icons/pause.png
-        assets/icons/previous.png
-        assets/icons/next.png
-        assets/icons/shuffle.png
-        assets/icons/repeat.png
-        
-        assets/icons/volume-loud.png
-        assets/icons/volume-mute.png
-       
+        #Music Page
+        assets/icons/Dark/MusicPage/play.png
+        assets/icons/Dark/MusicPage/pause.png
+        assets/icons/Dark/MusicPage/previous.png
+        assets/icons/Dark/MusicPage/next.png
+        assets/icons/Dark/MusicPage/shuffle.png
+        assets/icons/Dark/MusicPage/repeat.png 
+        assets/icons/Dark/MusicPage/volume-loud.png
+        assets/icons/Dark/MusicPage/volume-mute.png
+
+        #Settings Page
+        assets/icons/Dark/SettingsPage/Tabs/display-tab.png
+        assets/icons/Dark/SettingsPage/Tabs/modes-tab.png
+        assets/icons/Dark/SettingsPage/Tabs/sound-tab.png
+        assets/icons/Dark/SettingsPage/Tabs/settings-tab.png
+        assets/icons/Dark/SettingsPage/Tabs/system-tab.png
+
+        assets/icons/Dark/SettingsPage/brightness.png
+        assets/icons/Dark/SettingsPage/contrast.png
+        assets/icons/Dark/SettingsPage/language.png
+        assets/icons/Dark/SettingsPage/units.png
+        assets/icons/Dark/SettingsPage/theme.png
+        assets/icons/Dark/SettingsPage/drive-mode.png
+        assets/icons/Dark/SettingsPage/day-night-mode.png
+        assets/icons/Dark/SettingsPage/alert-vol.png
+        assets/icons/Dark/SettingsPage/indicator-vol.png
+        assets/icons/Dark/SettingsPage/clock-format.png
+        assets/icons/Dark/SettingsPage/date-format.png
+        assets/icons/Dark/SettingsPage/restart.png
+        assets/icons/Dark/SettingsPage/about.png
+
+    #Light Theme
+        #Universal
+        assets/icons/Light/Universal/home-main.png
+        assets/icons/Light/Universal/music-main.png
+        assets/icons/Light/Universal/diagnostics-main.png
+        assets/icons/Light/Universal/settings-main.png
+
+        #Music Page
+        assets/icons/Light/MusicPage/play.png
+        assets/icons/Light/MusicPage/pause.png
+        assets/icons/Light/MusicPage/previous.png
+        assets/icons/Light/MusicPage/next.png
+        assets/icons/Light/MusicPage/shuffle.png
+        assets/icons/Light/MusicPage/repeat.png 
+        assets/icons/Light/MusicPage/volume-loud.png
+        assets/icons/Light/MusicPage/volume-mute.png
+
+        #Settings Page
+        assets/icons/Light/SettingsPage/Tabs/display-tab.png
+        assets/icons/Light/SettingsPage/Tabs/modes-tab.png
+        assets/icons/Light/SettingsPage/Tabs/sound-tab.png
+        assets/icons/Light/SettingsPage/Tabs/settings-tab.png
+        assets/icons/Light/SettingsPage/Tabs/system-tab.png
+
+        assets/icons/Light/SettingsPage/brightness.png
+        assets/icons/Light/SettingsPage/contrast.png
+        assets/icons/Light/SettingsPage/language.png
+        assets/icons/Light/SettingsPage/units.png
+        assets/icons/Light/SettingsPage/theme.png
+        assets/icons/Light/SettingsPage/drive-mode.png
+        assets/icons/Light/SettingsPage/day-night-mode.png
+        assets/icons/Light/SettingsPage/alert-vol.png
+        assets/icons/Light/SettingsPage/indicator-vol.png
+        assets/icons/Light/SettingsPage/clock-format.png
+        assets/icons/Light/SettingsPage/date-format.png
+        assets/icons/Light/SettingsPage/restart.png
+
 )
 
 target_link_libraries(EV_HMI
