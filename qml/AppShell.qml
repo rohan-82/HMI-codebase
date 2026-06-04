@@ -5,13 +5,30 @@ Item {
     id: root
 
     property int currentPageIndex: 0
+    
+    // =====================================================
+    // GLOBAL APP TRANSLATION DICTIONARY
+    // =====================================================
+    readonly property var translations: {
+        "live_telemetry":   { "en": "LIVE TELEMETRY",    "de": "LIVE-TELEMETRIE",   "es": "TELEMETRÍA EN VIVO" },
+        "offline":          { "en": "OFFLINE",           "de": "OFFLINE",           "es": "FUERA DE LÍNEA" },
+        "system_nominal":   { "en": "SYSTEM NOMINAL",    "de": "SYSTEM NOMINAL",    "es": "SISTEMA NOMINAL" },
+        "comm_fault":       { "en": "COMMUNICATION FAULT","de": "KOMMUNIKATIONSFEHLER","es": "FALLO DE COMUNICACIÓN" },
+        "tab_home":         { "en": "Home",              "de": "Start",             "es": "Inicio" },
+        "tab_music":        { "en": "Music",             "de": "Musik",             "es": "Música" },
+        "tab_settings":     { "en": "Settings",          "de": "Einstellungen",     "es": "Ajustes" },
+        "tab_diagnostics":  { "en": "Diagnostics",       "de": "Diagnose",          "es": "Diagnóstico" }
+    }
+
+    // Dynamic keys mapping back directly to the translation dictionary above
     readonly property var pages: [
-        { "label": "Home" },
-        { "label": "Music" },
-        { "label": "Settings" },
-        { "label": "Diagnostics" }
+        { "key": "tab_home" },
+        { "key": "tab_music" },
+        { "key": "tab_settings" },
+        { "key": "tab_diagnostics" }
     ]
 
+    // Background Canvas
     Rectangle {
         anchors.fill: parent
         color: Colors.backgroundPrimary
@@ -21,11 +38,14 @@ Item {
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#090B0D" }
                 GradientStop { position: 0.58; color: Colors.backgroundPrimary }
-                GradientStop { position: 1.0; color: "#060707" }
+                GradientStop { position: 1.0; color: Colors.backgroundPrimary }
             }
         }
     }
 
+    // =====================================================
+    // TOP STATUS BAR
+    // =====================================================
     Item {
         id: topBar
         anchors.left: parent.left
@@ -49,7 +69,10 @@ Item {
             }
 
             Text {
-                text: vehicleData.communicationFault ? "OFFLINE" : "LIVE TELEMETRY"
+                // Now directly links to your updated global Typography module!
+                text: vehicleData.communicationFault 
+                      ? root.translations["offline"][Typography.currentLanguage] 
+                      : root.translations["live_telemetry"][Typography.currentLanguage]
                 color: vehicleData.communicationFault ? Colors.critical : Colors.accentEco
                 font.family: Typography.family
                 font.pixelSize: Typography.label
@@ -84,6 +107,9 @@ Item {
         }
     }
 
+    // =====================================================
+    // SYSTEM DIAGNOSTICS & WARNING BANNER
+    // =====================================================
     Rectangle {
         id: warningBanner
         anchors.left: parent.left
@@ -119,9 +145,14 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - Math.round(42 * Theme.scale)
-                text: vehicleData.communicationFault ? "COMMUNICATION FAULT"
-                    : vehicleData.warningMessage.length > 0 ? vehicleData.warningMessage.toUpperCase()
-                    : "SYSTEM NOMINAL"
+                
+                // Reactive warning text translated via global font engine state
+                text: vehicleData.communicationFault 
+                      ? root.translations["comm_fault"][Typography.currentLanguage]
+                      : vehicleData.warningMessage.length > 0 
+                        ? vehicleData.warningMessage.toUpperCase()
+                        : root.translations["system_nominal"][Typography.currentLanguage]
+                        
                 color: Colors.textPrimary
                 elide: Text.ElideRight
                 font.family: Typography.family
@@ -131,6 +162,10 @@ Item {
         }
     }
 
+
+    // =====================================================
+    // MAIN CONTENT PAGE LOADER
+    // =====================================================
     Loader {
         id: pageLoader
         anchors.left: parent.left
@@ -147,13 +182,18 @@ Item {
             : diagnosticsPage
     }
 
+
+    // =====================================================
+    // BOTTOM NAVIGATION BAR
+    // =====================================================
     Rectangle {
         id: navBar
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: Theme.navBarHeight
-        color: "#D0030405"
+        color: Colors.surfaceRaised
+        border.color: Colors.borderSubtle
 
         Row {
             anchors.centerIn: parent
@@ -166,8 +206,12 @@ Item {
                     width: Math.round(132 * Theme.scale)
                     height: Math.round(46 * Theme.scale)
                     radius: Math.round(8 * Theme.scale)
-                    color: root.currentPageIndex === index ? Colors.surfaceBase : "transparent"
-                    border.color: root.currentPageIndex === index ? Colors.borderWarm : Colors.borderSubtle
+                    color: root.currentPageIndex === index 
+                             ? Colors.surfaceBase 
+                             : "transparent"
+                    border.color: root.currentPageIndex === index
+                             ? Colors.borderWarm 
+                             : Colors.borderSubtle
                     border.width: 1
 
                     Behavior on color {
@@ -179,11 +223,18 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: root.pages[index].label
-                        color: root.currentPageIndex === index ? Colors.textPrimary : Colors.textMuted
+                        
+                        // Dynamically updates translation values for navbar labels instantly
+                        text: root.translations[root.pages[index].key][Typography.currentLanguage]
+                        
+                        color: root.currentPageIndex === index
+                                 ? Colors.textPrimary
+                                 : Colors.textMuted
                         font.family: Typography.family
                         font.pixelSize: Typography.bodySmall
-                        font.weight: root.currentPageIndex === index ? Font.DemiBold : Font.Medium
+                        font.weight: root.currentPageIndex === index 
+                                 ? Font.DemiBold 
+                                 : Font.Medium
                     }
 
                     MouseArea {
@@ -195,23 +246,10 @@ Item {
         }
     }
 
-    Component {
-        id: homePage
-        HomePage {}
-    }
-
-    Component {
-        id: musicPage
-        MusicPage {}
-    }
-
-    Component {
-        id: settingsPage
-        SettingsPage {}
-    }
-
-    Component {
-        id: diagnosticsPage
-        DiagnosticsPage {}
-    }
+    
+    Component { id: homePage; HomePage {} }
+    Component { id: musicPage; MusicPage {} }
+    Component { id: settingsPage; SettingsPage {} }
+    Component { id: diagnosticsPage; DiagnosticsPage {} }
+    
 }

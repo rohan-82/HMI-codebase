@@ -5,11 +5,11 @@ import EvHmi
 
 QtObject {
     // Linked straight to settingsState.language ("en", "de", "es")
-    property string currentLanguage: "en"
+    property string current1Language: "en"
 
-    readonly property bool isEn: currentLanguage === "en"
-    readonly property bool isDe: currentLanguage === "de"
-    readonly property bool isEs: currentLanguage === "es"
+    readonly property bool isEn: current1Language === "en"
+    readonly property bool isDe: current1Language === "de"
+    readonly property bool isEs: current1Language === "es"
 
     // =====================================================
     // HARDCODED HMI STRINGS

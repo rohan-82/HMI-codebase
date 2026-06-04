@@ -132,6 +132,7 @@ qt_add_resources(EV_HMI "assets"
         assets/icons/Light/SettingsPage/clock-format.png
         assets/icons/Light/SettingsPage/date-format.png
         assets/icons/Light/SettingsPage/restart.png
+        assets/icons/Light/SettingsPage/about.png
 
 )
 

@@ -17,4 +17,7 @@ QtObject {
     readonly property int bodyMedium: Math.round(15 * scale)
     readonly property int bodySmall: Math.round(13 * scale)
     readonly property int label: Math.round(12 * scale)
+
+    property string currentLanguage: "en"
+
 }

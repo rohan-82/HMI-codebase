@@ -17,15 +17,42 @@ Item {
         property int alertVolume: 66
         property int indicatorVolume: 40
 
+        property string language: Typography.currentLanguage         
+        property string dayNightMode: Colors.dayNightMode
+
         property string units: "metric"     
-        property string language: "en"         
-        property string dayNightMode: "night"  
         property int clockFormat: 24           
         property string dateFormat: "dd"        
     }
 
+    // =====================================================
+    // HARDCODED TRANSLATION DICTIONARY
+    // =====================================================
+    readonly property var translations: {
+        "modes_title":  { "en": "Modes",       "de": "Modi",               "es": "Modos" },
+        "display_title":{ "en": "Display",     "de": "Anzeige",            "es": "Pantalla" },
+        "volume_title": { "en": "Volume",      "de": "Lautstärke",         "es": "Volumen" },
+        "system_title": { "en": "System",      "de": "System",             "es": "Sistema" },
+        "units":        { "en": " Units",      "de": " Einheiten",         "es": " Unidades" },
+        "language":     { "en": " Language",   "de": " Sprache",           "es": " Idioma" },
+        "day_night":    { "en": " Day / Night Mode", "de": " Tag / Nacht Modus", "es": " Modo Día / Noche" },
+        "theme":        { "en": " Theme",      "de": " Design",            "es": " Tema" },
+        "brightness":   { "en": " Brightness", "de": " Helligkeit",        "es": " Brillo" },
+        "contrast":     { "en": " Contrast",   "de": " Kontrast",          "es": " Contraste" },
+        "alert":        { "en": " Alert",      "de": " Warnung",           "es": " Alerta" },
+        "indicator":    { "en": " Indicator",  "de": " Blinker",           "es": " Indicador" },
+        "clock_format": { "en": " Clock Format", "de": " Uhrzeitformat",    "es": " Formato de Reloj" },
+        "date_format":  { "en": " Date Format",  "de": " Datumsformat",     "es": " Formato de Fecha" },
+        "about":        { "en": " About",      "de": " Über",              "es": " Acerca de" },
+        "factory_reset":{ "en": "Factory Reset", "de": "Werkseinstellung", "es": "Reiniciar Fábrica" }
+    }
+
     RowLayout {
-        anchors.fill: parent
+        // Force anchors to left and right boundaries to avoid any layout calculations leaving black gaps
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         spacing: settingsRoot.cardSpacing
 
         // =====================================================
@@ -33,9 +60,8 @@ Item {
         // =====================================================
         BaseCard {
             Layout.fillWidth: true
-            Layout.preferredWidth: 240
             Layout.fillHeight: true
-            title: "Modes"
+            title: settingsRoot.translations["modes_title"][settingsState.language]
 
             Column {
                 anchors.fill: parent
@@ -46,15 +72,17 @@ Item {
                     width: parent.width
                     height: 20
                     
-                    Image { id: unitsIcon
-                    source: settingsState.dayNightMode === "day"
-                             ? "qrc:/assets/icons/Light/SettingsPage/units.png"
-                             : "qrc:/assets/icons/Dark/SettingsPage/units.png" 
-                    width: 18
-                    height: 18
-                    anchors.verticalCenter: parent.verticalCenter }
+                    Image { 
+                        id: unitsIcon
+                        source: settingsState.dayNightMode === "day"
+                                 ? "qrc:/assets/icons/Light/SettingsPage/units.png"
+                                 : "qrc:/assets/icons/Dark/SettingsPage/units.png" 
+                        width: 18
+                        height: 18
+                        anchors.verticalCenter: parent.verticalCenter 
+                    }
                     Text { 
-                        text: " Units"
+                        text: settingsRoot.translations["units"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -99,10 +127,9 @@ Item {
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter 
-                    
                     }
                     Text { 
-                        text: " Language"
+                        text: settingsRoot.translations["language"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -120,7 +147,13 @@ Item {
                         color: settingsState.language === "en" ? Colors.surfacePressed : Colors.surfaceRaised
                         border.width: 1; border.color: settingsState.language === "en" ? Colors.borderActive : Colors.borderSubtle
                         Text { anchors.centerIn: parent; text: "ENG"; color: settingsState.language === "en" ? Colors.textPrimary : Colors.textMuted; font.pixelSize: 11; font.weight: Font.DemiBold }
-                        MouseArea { anchors.fill: parent; onClicked: settingsState.language = "en" }
+                        MouseArea { 
+                            anchors.fill: parent
+                            onClicked: { 
+                                     settingsState.language = "en"
+                                     Typography.currentLanguage = "en"
+                                      }
+                        }
                     }
                     
                     Rectangle {
@@ -128,7 +161,13 @@ Item {
                         color: settingsState.language === "de" ? Colors.surfacePressed : Colors.surfaceRaised
                         border.width: 1; border.color: settingsState.language === "de" ? Colors.borderActive : Colors.borderSubtle
                         Text { anchors.centerIn: parent; text: "GER"; color: settingsState.language === "de" ? Colors.textPrimary : Colors.textMuted; font.pixelSize: 11; font.weight: Font.DemiBold }
-                        MouseArea { anchors.fill: parent; onClicked: settingsState.language = "de" }
+                        MouseArea { 
+                            anchors.fill: parent
+                            onClicked: { 
+                                         settingsState.language = "de"
+                                         Typography.currentLanguage = "de"
+                                       }
+                        }
                     }
                     
                     Rectangle {
@@ -136,7 +175,13 @@ Item {
                         color: settingsState.language === "es" ? Colors.surfacePressed : Colors.surfaceRaised
                         border.width: 1; border.color: settingsState.language === "es" ? Colors.borderActive : Colors.borderSubtle
                         Text { anchors.centerIn: parent; text: "ESP"; color: settingsState.language === "es" ? Colors.textPrimary : Colors.textMuted; font.pixelSize: 11; font.weight: Font.DemiBold }
-                        MouseArea { anchors.fill: parent; onClicked: settingsState.language = "es" }
+                        MouseArea { 
+                            anchors.fill: parent
+                            onClicked: { 
+                                         settingsState.language = "es"
+                                         Typography.currentLanguage = "es"
+                                       }
+                        }
                     }
                 }
 
@@ -155,7 +200,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter 
                     }
                     Text { 
-                        text: " Day / Night Mode"
+                        text: settingsRoot.translations["day_night"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -169,7 +214,6 @@ Item {
                     spacing: 4
                     width: parent.width
                     
-                    // --- Auto Button ---
                     Rectangle {
                         width: (parent.width - 8) / 3; height: 30; radius: Theme.controlRadius
                         color: settingsState.dayNightMode === "auto" ? Colors.surfacePressed : Colors.surfaceRaised
@@ -183,7 +227,6 @@ Item {
                             font.pixelSize: 11
                             font.weight: Font.DemiBold 
                         }
-                        
                         MouseArea { 
                             anchors.fill: parent
                             onClicked: {
@@ -193,7 +236,6 @@ Item {
                         }
                     }
                     
-                    // --- Day Button (Light Mode Override) ---
                     Rectangle {
                         width: (parent.width - 8) / 3; height: 30; radius: Theme.controlRadius
                         color: settingsState.dayNightMode === "day" ? Colors.surfacePressed : Colors.surfaceRaised
@@ -207,17 +249,15 @@ Item {
                             font.pixelSize: 11
                             font.weight: Font.DemiBold 
                         }
-                        
                         MouseArea { 
                             anchors.fill: parent
                             onClicked: {
                                 settingsState.dayNightMode = "day"
-                                Colors.dayNightMode = "day" // Forces the global singleton to invert palettes to Light Mode
+                                Colors.dayNightMode = "day"
                             }
                         }
                     }
                     
-                    // --- Night Button (Dark Mode Override) ---
                     Rectangle {
                         width: (parent.width - 8) / 3; height: 30; radius: Theme.controlRadius
                         color: settingsState.dayNightMode === "night" ? Colors.surfacePressed : Colors.surfaceRaised
@@ -231,12 +271,11 @@ Item {
                             font.pixelSize: 11
                             font.weight: Font.DemiBold 
                         }
-                        
                         MouseArea { 
                             anchors.fill: parent
                             onClicked: {
                                 settingsState.dayNightMode = "night"
-                                Colors.dayNightMode = "night" // Forces the global singleton back into pristine Dark Mode layouts
+                                Colors.dayNightMode = "night"
                             }
                         }
                     }
@@ -245,18 +284,17 @@ Item {
         }
 
         // =====================================================
-        // CARD 2: DISPLAY VISUALS (IMPROVED GRADIENT THEMES)
+        // CARD 2: DISPLAY VISUALS
         // =====================================================
         BaseCard {
             Layout.fillWidth: true
-            Layout.preferredWidth: 260
             Layout.fillHeight: true
-            title: "Display"
+            title: settingsRoot.translations["display_title"][settingsState.language]
 
             Column {
                 anchors.fill: parent
                 anchors.margins: settingsRoot.innerMargin
-                spacing: 14 // Increased padding spacing for cleanly defined section breaks
+                spacing: 14 
 
                 Item {
                     width: parent.width
@@ -271,7 +309,7 @@ Item {
                      }
 
                     Text { 
-                        text: " Theme"
+                        text: settingsRoot.translations["theme"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -281,12 +319,10 @@ Item {
                     }
                 }
 
-                // Cleanly isolated row container with balanced touch areas for gradients
                 Row {
                     spacing: 24
                     anchors.horizontalCenter: parent.horizontalCenter
                     
-                    // --- Ice Node ---
                     Column {
                         spacing: 6
                         Rectangle { 
@@ -307,7 +343,6 @@ Item {
                         Text { text: "Ice"; color: Colors.themeName === "ICE" ? Colors.textPrimary : Colors.textMuted; font.pixelSize: 11; font.weight: Colors.themeName === "ICE" ? Font.DemiBold : Font.Normal; anchors.horizontalCenter: parent.horizontalCenter }
                     }
 
-                    // --- Ember Node ---
                     Column {
                         spacing: 6
                         Rectangle { 
@@ -328,7 +363,6 @@ Item {
                         Text { text: "Ember"; color: Colors.themeName === "AMBER" ? Colors.textPrimary : Colors.textMuted; font.pixelSize: 11; font.weight: Colors.themeName === "AMBER" ? Font.DemiBold : Font.Normal; anchors.horizontalCenter: parent.horizontalCenter }
                     }
 
-                    // --- Copper Node ---
                     Column {
                         spacing: 6
                         Rectangle { 
@@ -362,9 +396,8 @@ Item {
                         height: 18
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                    
                      }
-                    Text { text: " Brightness"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: brightnessIcon.right; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: settingsRoot.translations["brightness"][settingsState.language]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: brightnessIcon.right; anchors.verticalCenter: parent.verticalCenter }
                     Text { text: Math.round(settingsState.brightness) + "%"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Slider {
@@ -386,7 +419,7 @@ Item {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter 
                     }
-                    Text { text: " Contrast"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: contrastIcon.right; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: settingsRoot.translations["contrast"][settingsState.language]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: contrastIcon.right; anchors.verticalCenter: parent.verticalCenter }
                     Text { text: Math.round(settingsState.contrast) + "%"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Slider {
@@ -398,13 +431,12 @@ Item {
         }
 
         // =====================================================
-        // CARD 3: SOUND TELEMETRY (FIXED TEXT OVERLAPS)
+        // CARD 3: SOUND TELEMETRY
         // =====================================================
         BaseCard {
             Layout.fillWidth: true
-            Layout.preferredWidth: 240
             Layout.fillHeight: true
-            title: "Volume"
+            title: settingsRoot.translations["volume_title"][settingsState.language]
 
             Column {
                 anchors.fill: parent
@@ -419,14 +451,12 @@ Item {
                         source: settingsState.dayNightMode === "day"
                                  ? "qrc:/assets/icons/Light/SettingsPage/alert-vol.png"
                                  : "qrc:/assets/icons/Dark/SettingsPage/alert-vol.png"
-                         
                         width: 18
                         height: 18
                         anchors.left: parent.left
-                        
                         anchors.verticalCenter: parent.verticalCenter
                      }
-                    Text { text: " Alert"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: alertIcon.right; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: settingsRoot.translations["alert"][settingsState.language]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: alertIcon.right; anchors.verticalCenter: parent.verticalCenter }
                     Text { text: Math.round(settingsState.alertVolume) + "%"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Slider {
@@ -443,22 +473,20 @@ Item {
 
                 Item { width: 1; height: 8 }
 
-                // FIXED: Precise anchoring configurations tracking title strings and data markers safely
                 Item {
                     width: parent.width
                     height: 20
                     Image {
-                         id: indicatorIcon
+                        id: indicatorIcon
                         source: settingsState.dayNightMode === "day"
                                  ? "qrc:/assets/icons/Light/SettingsPage/indicator-vol.png"
                                  : "qrc:/assets/icons/Dark/SettingsPage/indicator-vol.png"
-
                         width: 18
                         height: 18
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter 
                     }
-                    Text { text: " Indicator"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: indicatorIcon.right; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: settingsRoot.translations["indicator"][settingsState.language]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.DemiBold; anchors.left: indicatorIcon.right; anchors.verticalCenter: parent.verticalCenter }
                     Text { text: Math.round(settingsState.indicatorVolume) + "%"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Slider {
@@ -480,9 +508,8 @@ Item {
         // =====================================================
         BaseCard {
             Layout.fillWidth: true
-            Layout.preferredWidth: 260
             Layout.fillHeight: true
-            title: "System"
+            title: settingsRoot.translations["system_title"][settingsState.language]
 
             Column {
                 anchors.fill: parent
@@ -497,14 +524,12 @@ Item {
                         source: settingsState.dayNightMode === "day"
                                  ? "qrc:/assets/icons/Light/SettingsPage/clock-format.png"
                                  : "qrc:/assets/icons/Dark/SettingsPage/clock-format.png"
-
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter 
-                    
                     }
                     Text { 
-                        text: " Clock Format"
+                        text: settingsRoot.translations["clock_format"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -544,10 +569,9 @@ Item {
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter 
-                   
                     }
                     Text { 
-                        text: " Date Format"
+                        text: settingsRoot.translations["date_format"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -579,19 +603,18 @@ Item {
                 Item {
                     width: parent.width
                     height: 20
-                    Image {
-                         id: aboutIcon;
-                        source:settingsState.dayNightMode === "day"
+                    Image { 
+                        id: aboutIcon
+                        source: settingsState.dayNightMode === "day"
                                  ? "qrc:/assets/icons/Light/SettingsPage/about.png"
                                  : "qrc:/assets/icons/Dark/SettingsPage/about.png"
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter 
-                    
                     }
 
                     Text { 
-                        text: " About"
+                        text: settingsRoot.translations["about"][settingsState.language]
                         color: Colors.textPrimary
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
@@ -615,13 +638,11 @@ Item {
                     
                     Row {
                         anchors.centerIn: parent; spacing: 8
-                        Text { text: "Factory Reset"; color: "#ff4444"; font.weight: Font.Bold; font.pixelSize: 12 }
+                        Text { text: settingsRoot.translations["factory_reset"][settingsState.language]; color: "#ff4444"; font.weight: Font.Bold; font.pixelSize: 12 }
                         Image { 
-                            
                             source: settingsState.dayNightMode === "day"
                                     ? "qrc:/assets/icons/Light/SettingsPage/restart.png"
                                     : "qrc:/assets/icons/Dark/SettingsPage/restart.png"
-                                                    
                             width: 14
                             height: 14
                             anchors.verticalCenter: parent.verticalCenter 
@@ -639,11 +660,13 @@ Item {
                             settingsState.units = "metric"
                             settingsState.language = "en"
                             settingsState.dayNightMode = "auto"
-                            Colors.themeName = "ICE"
                             settingsState.clockFormat = 24
                             settingsState.dateFormat = "dd"
-                        }
 
+                            Colors.themeName = "ICE"
+                            Colors.dayNightMode = "auto"           // Forces background palettes to follow system defaults
+                            Typography.currentLanguage = "en"
+                        }
                     }
                 }
             }

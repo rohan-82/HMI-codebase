@@ -32,7 +32,7 @@ Item {
                         width: 110
                         height: 110
 
-                        radius: 12
+                        
 
                         color: Colors.surfaceRaised
 
@@ -479,9 +479,13 @@ Item {
                                 height: 20
 
                                 source: musicPlayer.muted
-                                        ? "qrc:/assets/icons/Dark/MusicPage/volume-mute.png"
-                                        : "qrc:/assets/icons/Dark/MusicPage/volume-loud.png"
-                            }
+                                        ? Colors.dayNightMode === "day"
+                                          ? "qrc:/assets/icons/Light/MusicPage/volume-mute.png"
+                                          : "qrc:/assets/icons/Dark/MusicPage/volume-mute.png"
+                                        : Colors.dayNightMode === "day"
+                                          ? "qrc:/assets/icons/Light/MusicPage/volume-loud.png"
+                                          : "qrc:/assets/icons/Dark/MusicPage/volume-loud.png"
+                                        }
 
                             MouseArea {
                                 anchors.fill: parent
