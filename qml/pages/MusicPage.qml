@@ -33,8 +33,6 @@ Item {
                         width: 110
                         height: 110
 
-                        radius: 12
-
                         color: Colors.surfaceRaised
 
                         border.width: 2
@@ -577,11 +575,14 @@ Item {
                         spacing: 60
 
                         Column {
+                            width: parent.width / 2 
                             spacing: 2
 
                             Text {
                                 text: "Shuffle"
                                 color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
                             }
 
                             Text {
@@ -590,23 +591,32 @@ Item {
                                     : "OFF"
 
                                 color: Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodyLarge
                             }
                         }
 
                         Column {
+                            width: parent.width / 2
                             spacing: 2
 
                             Text {
+                                horizontalAlignment: Text.AlignRight
                                 text: "Repeat"
                                 color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
                             }
 
                             Text {
+                                horizontalAlignment: Text.AlignRight
                                 text: musicPlayer.repeatEnabled
                                     ? "ON"
                                     : "OFF"
 
                                 color: Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodyLarge
                             }
                         }
                     }
@@ -614,34 +624,167 @@ Item {
             }
 
             Component {
-                id: searchTab
+                    id: searchTab
 
-                Column {
-                    width: parent.width
-                    spacing: 10
-
-                    TextField {
+                    Column {
                         width: parent.width
-                        placeholderText: "Search Spotify..."
-                    }
+                        spacing: 10
 
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-                        color: Colors.borderSubtle
-                    }
+                        // ==========================================
+                        // SEARCH BAR
+                        // ==========================================
+                        Row {
+                            width: parent.width
+                            spacing: 6
 
-                    Text {
-                        text: "Spotify search results will appear here"
+                            TextField {
+                                id: searchField
 
-                        color: Colors.textSecondary
+                                width: parent.width - 46
 
-                        wrapMode: Text.WordWrap
+                                placeholderText: "Search Spotify..."
 
-                        width: parent.width
+                                onAccepted: {
+                                    if (text.length > 0)
+                                        spotifyApi.searchTracks(text)
+                                }
+                            }
+
+                            Rectangle {
+                                id: searchButton
+
+                                width: 40
+                                height: searchField.height
+
+                                radius: 6
+
+                                color: searchMouse.pressed
+                                    ? Colors.surfacePressed
+                                    : Colors.surfaceRaised
+
+                                border.width: 1
+                                border.color: Colors.borderWarm
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 100
+                                    }
+                                }
+
+                                Image {
+                                    anchors.centerIn: parent
+                                    width: 18
+                                    height: 18
+                                    source: Colors.dayNightMode === "day"
+                                        ? "qrc:/assets/icons/Light/MusicPage/search.png"
+                                        : "qrc:/assets/icons/Dark/MusicPage/search.png"
+
+                                }
+
+                                MouseArea {
+                                    id: searchMouse
+
+                                    anchors.fill: parent
+
+                                    onClicked: {
+                                        if(searchField.text.length > 0)
+                                            spotifyApi.searchTracks(searchField.text)
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Colors.borderSubtle
+                        }
+
+                        // ==========================================
+                        // RESULTS
+                        // ==========================================
+                        ListView {
+                            width: parent.width
+                            height: 250
+
+                            clip: true
+
+                            model: spotifyApi.tracks
+
+                            delegate: Rectangle {
+                                width: ListView.view.width
+                                height: 64
+
+                                radius: 6
+
+                                color: Colors.surfaceRaised
+
+                                border.width: 1
+                                border.color: Colors.borderWarm
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+
+                                    spacing: 10
+
+                                    Image {
+                                        width: 48
+                                        height: 48
+
+                                        source: modelData.imageUrl
+
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        width: parent.width - 60
+
+                                        spacing: 2
+
+                                        Text {
+                                            text: modelData.title
+
+                                            color: Colors.textPrimary
+
+                                            font.family: Typography.family
+                                            font.pixelSize: Typography.bodyMedium
+
+                                            elide: Text.ElideRight
+
+                                            width: parent.width
+                                        }
+
+                                        Text {
+                                            text: modelData.artist
+
+                                            color: Colors.textSecondary
+
+                                            font.family: Typography.family
+                                            font.pixelSize: Typography.bodySmall
+
+                                            elide: Text.ElideRight
+
+                                            width: parent.width
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    onClicked: {
+                                        spotifyApi.selectTrack(index)
+                                    }
+                                }
+                            }
+
+                            ScrollBar.vertical: ScrollBar { }
+                        }
                     }
                 }
-            }
 
             Component {
                 id: queueTab
