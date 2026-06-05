@@ -4,9 +4,10 @@ import QtQuick
 import EvHmi
 
 QtObject {
+
     property real scale: 1.0
 
-    readonly property string family: "Inter"
+    readonly property string family: "Rajdhani"
 
     readonly property int displayLarge: Math.round(92 * scale)
     readonly property int displayMedium: Math.round(56 * scale)
