@@ -5,7 +5,7 @@ project(EV_HMI VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia Network)
 
 qt_standard_project_setup()
 
@@ -16,6 +16,7 @@ qt_add_executable(EV_HMI
     backend/TelemetrySimulator.cpp
     backend/WarningManager.cpp
     backend/LocalMusicPlayer.cpp
+    backend/SpotifyAPIManager.cpp
 )
 
 target_include_directories(EV_HMI PRIVATE
@@ -42,6 +43,12 @@ qt_add_qml_module(EV_HMI
         qml/components/EnergyBar.qml
         qml/components/MetricTile.qml
         qml/components/ModeButton.qml
+        qml/components/Speedometer.qml
+        qml/components/DriveMode.qml
+        qml/components/PRND.qml
+        qml/components/DistancePanel.qml
+        qml/components/Battery.qml
+        qml/components/StatusCard.qml
 
         qml/pages/HomePage.qml
         qml/pages/MusicPage.qml
@@ -143,4 +150,5 @@ target_link_libraries(EV_HMI
         Qt6::Qml
         Qt6::Quick
         Qt6::Multimedia
+        Qt6::Network
 )

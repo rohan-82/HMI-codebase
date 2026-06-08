@@ -1,68 +1,246 @@
 import QtQuick
-import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Shapes
 import EvHmi
 
 Item {
-    id: root
+    id: homePage
+    anchors.fill: parent
+    anchors.margins: Theme.pageMargin
 
-    readonly property color modeColor: vehicleData.driveMode === "SPORT" ? Colors.accentSport
-        : vehicleData.driveMode === "CITY" ? Colors.accentCity
-        : Colors.accentEco
-    readonly property bool activeWarning: vehicleData.communicationFault
-        || vehicleData.warningMessage.length > 0
-        || vehicleData.lowBatteryWarning
-        || vehicleData.motorOverTempWarning
-        || vehicleData.batteryOverTempWarning
-
-    GridLayout {
+    Column {
         anchors.fill: parent
-        columns: 12
-        rows: 8
-        columnSpacing: Theme.cardGap
-        rowSpacing: Theme.cardGap
+        spacing: Theme.sectionGap
 
-        BaseCard {
-            Layout.column: 0
-            Layout.row: 0
-            Layout.columnSpan: 8
-            Layout.rowSpan: 6
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            padding: Math.round(18 * Theme.scale)
-            baseColor: Colors.surfaceSunken
-            outlineColor: root.modeColor
+        // =====================================================
+        // 1. TOP ROW (SPEEDOMETER & BATTERY STATUS)
+        // =====================================================
+        Row {
+            width: parent.width
+            height: parent.height * 0.58 // Expanded slightly to reclaim banner space
+            spacing: Theme.cardGap
 
-            Item {
-                anchors.fill: parent
+            // --- SPEEDOMETER & RPM GAUGE CARD ---
+            BaseCard {
+                width: (parent.width * 0.55) - (Theme.cardGap / 2)
+                height: parent.height
+                title: "" 
+
+                Canvas {
+                    id: gaugeCanvas
+                    anchors.fill: parent
+                    anchors.margins: 20
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        
+                        var centerX = width / 2;
+                        var centerY = height / 2 + 15;
+                        var radius = Math.min(width, height) * 0.44;
+                        
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, radius, Math.PI * 0.8, Math.PI * 2.2);
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = Colors.surfaceSunken;
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        var endAngle = Math.PI * 0.8 + ((Math.PI * 1.4) * (Math.min(vehicleData.speed, 200) / 200));
+                        ctx.arc(centerX, centerY, radius, Math.PI * 0.8, endAngle);
+                        ctx.lineWidth = 6;
+                        ctx.strokeStyle = Colors.borderActive;
+                        ctx.stroke();
+                    }
+                    
+                    Connections {
+                        target: vehicleData
+                        function onSpeedChanged() { gaugeCanvas.requestPaint(); }
+                    }
+                }
+
+                Column {
+                    anchors.centerIn: parent
+                    anchors.verticalCenterOffset: 15
+                    spacing: 2
+
+                    Text {
+                        text: vehicleData.speed
+                        color: Colors.textPrimary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.displayLarge
+                        font.bold: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Text {
+                        text: "km/h"
+                        color: Colors.textSecondary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyLarge
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Item { width: 1; height: 10 } 
+
+                    Text {
+                        text: "RPM"
+                        color: Colors.textMuted
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodySmall
+                        font.bold: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Text {
+                        text: vehicleData.rpm
+                        color: Colors.textPrimary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.titleLarge
+                        font.weight: Font.DemiBold
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+                }
+            }
+
+            // --- BATTERY SYSTEM METRICS CARD ---
+            BaseCard {
+                width: (parent.width * 0.45) - (Theme.cardGap / 2)
+                height: parent.height
+                title: "BATTERY"
+
+                Column {
+                    anchors.top: parent.top
+                    anchors.topMargin: 45 
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Theme.cardPadding
+                    spacing: 14
+
+                    Row {
+                        width: parent.width
+                        spacing: 12
+
+                        Rectangle {
+                            width: parent.width - 75
+                            height: 34
+                            radius: 6
+                            color: Colors.surfaceSunken
+                            border.width: 1.5
+                            border.color: Colors.borderWarm
+                            clip: true
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.margins: 4
+                                spacing: 2
+
+                                Repeater {
+                                    model: 10
+                                    Rectangle {
+                                        width: (parent.width - 22) / 10
+                                        height: parent.height
+                                        radius: 2
+                                        color: (index * 10 < vehicleData.batteryPercent) ? Colors.accentEco : "transparent"
+                                        opacity: (index * 10 < vehicleData.batteryPercent) ? 1.0 : 0.0
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: vehicleData.batteryPercent + "%"
+                            color: Colors.textPrimary
+                            font.family: Typography.family
+                            font.pixelSize: Typography.titleMedium
+                            font.bold: true
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    Column {
+                        width: parent.width
+                        spacing: 10
+
+                        property var itemsModel: [
+                            {"label": "Capacity", "value": vehicleData.batteryPercent + "%", "isAccent": false},
+                            {"label": "Total Range", "value": "180 km", "isAccent": true}, 
+                            {"label": "Estimated Range", "value": vehicleData.rangeKm + " km", "isAccent": true},
+                            {"label": "Battery Temp", "value": vehicleData.batteryTemp + "°C", "isAccent": false}
+                        ]
+
+                        Repeater {
+                            model: parent.itemsModel
+                            Item {
+                                width: parent.width
+                                height: 26 
+
+                                Text {
+                                    text: modelData.label
+                                    color: Colors.textSecondary
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodyMedium
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Text {
+                                    text: modelData.value
+                                    color: modelData.isAccent ? Colors.accentCity : Colors.textPrimary
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodyLarge
+                                    font.bold: true
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // =====================================================
+        // 2. LOWER CONTROL SETS ROW (PRND, DRIVE MODES & STATUS)
+        // =====================================================
+        Row {
+            width: parent.width
+            height: parent.height * 0.25
+            spacing: Theme.cardGap
+
+            // --- PRND & LIGHTS INTERACTIVE CARD ---
+            BaseCard {
+                width: parent.width * 0.46
+                height: parent.height
+                title: "PRND & LIGHTS"
 
                 Row {
                     anchors.top: parent.top
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: Math.round(18 * Theme.scale)
-
-                    IndicatorLamp {
-                        label: "L"
-                        active: vehicleData.leftIndicator || vehicleData.hazardLights
-                    }
+                    anchors.topMargin: 45
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: Theme.cardPadding
+                    spacing: Theme.sectionGap
 
                     Row {
-                        spacing: Math.round(8 * Theme.scale)
+                        spacing: 4
+                        property var gears: ["P", "R", "N", "D"]
                         Repeater {
-                            model: ["P", "R", "N", "D"]
+                            model: parent.gears
                             Rectangle {
-                                width: Math.round(46 * Theme.scale)
-                                height: Math.round(36 * Theme.scale)
+                                width: 36
+                                height: 36
                                 radius: Theme.controlRadius
-                                color: vehicleData.gearState === modelData ? root.modeColor : Colors.surfaceRaised
-                                border.color: vehicleData.gearState === modelData ? root.modeColor : Colors.borderSubtle
+                                color: (vehicleData.gearState === modelData) ? Colors.surfacePressed : Colors.surfaceSunken
+                                border.width: 1.5
+                                border.color: (vehicleData.gearState === modelData) ? Colors.borderActive : Colors.borderWarm
 
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData
-                                    color: vehicleData.gearState === modelData ? Colors.backgroundPrimary : Colors.textSecondary
+                                    color: (vehicleData.gearState === modelData) ? Colors.borderActive : Colors.textSecondary
                                     font.family: Typography.family
                                     font.pixelSize: Typography.bodyMedium
-                                    font.weight: Font.DemiBold
+                                    font.bold: true
                                 }
 
                                 MouseArea {
@@ -73,365 +251,249 @@ Item {
                         }
                     }
 
-                    IndicatorLamp {
-                        label: "R"
-                        active: vehicleData.rightIndicator || vehicleData.hazardLights
-                    }
-                }
-
-                Canvas {
-                    id: speedArc
-                    anchors.fill: parent
-                    anchors.topMargin: Math.round(42 * Theme.scale)
-                    anchors.bottomMargin: Math.round(34 * Theme.scale)
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        var cx = width / 2
-                        var cy = height * 0.66
-                        var r = Math.min(width * 0.36, height * 0.52)
-                        var start = Math.PI * 0.78
-                        var end = Math.PI * 2.22
-                        var valueEnd = start + (end - start) * Math.min(1, vehicleData.speed / 140)
-                        ctx.clearRect(0, 0, width, height)
-                        ctx.lineCap = "round"
-                        ctx.lineWidth = Math.max(10, 16 * Theme.scale)
-                        ctx.strokeStyle = Colors.borderSubtle
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, start, end)
-                        ctx.stroke()
-                        ctx.strokeStyle = root.modeColor
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, start, valueEnd)
-                        ctx.stroke()
+                    Rectangle {
+                        width: 1
+                        height: 36
+                        color: Colors.borderSubtle
                     }
 
-                    Connections {
-                        target: vehicleData
-                        function onTelemetryChanged() {
-                            speedArc.requestPaint()
+                    Row {
+                        spacing: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Image {
+                            id: leftImg
+                            source: vehicleData.leftIndicator ? "qrc:/assets/icons/Active/left_on.png" : "qrc:/assets/icons/Muted/left_off.png"
+                            width: 22; height: 22; fillMode: Image.PreserveAspectFit
+                            visible: status === Image.Ready
                         }
-                    }
+                        Text { text: "⬅"; color: vehicleData.leftIndicator ? Colors.accentEco : Colors.textMuted; font.pixelSize: 18; visible: leftImg.status !== Image.Ready }
 
-                    Connections {
-                        target: Colors
-                        function onThemeNameChanged() {
-                            speedArc.requestPaint()
+                        Image {
+                            id: headImg
+                            source: vehicleData.headlights ? "qrc:/assets/icons/Active/head_on.png" : "qrc:/assets/icons/Muted/head_off.png"
+                            width: 22; height: 22; fillMode: Image.PreserveAspectFit
+                            visible: status === Image.Ready
                         }
+                        Text { text: "D0="; color: vehicleData.headlights ? Colors.accentBlue : Colors.textMuted; font.pixelSize: 18; visible: headImg.status !== Image.Ready }
+
+                        Image {
+                            id: highImg
+                            source: vehicleData.highBeam ? "qrc:/assets/icons/Active/high_on.png" : "qrc:/assets/icons/Muted/high_off.png"
+                            width: 22; height: 22; fillMode: Image.PreserveAspectFit
+                            visible: status === Image.Ready
+                        }
+                        Text { text: "≡D"; color: vehicleData.highBeam ? Colors.accentBlue : Colors.textMuted; font.pixelSize: 18; visible: highImg.status !== Image.Ready }
+
+                        Image {
+                            id: hazImg
+                            source: vehicleData.hazardLights ? "qrc:/assets/icons/Active/hazard_on.png" : "qrc:/assets/icons/Muted/hazard_off.png"
+                            width: 22; height: 22; fillMode: Image.PreserveAspectFit
+                            visible: status === Image.Ready
+                        }
+                        Text { text: "⚠️"; color: vehicleData.hazardLights ? Colors.critical : Colors.textMuted; font.pixelSize: 18; visible: hazImg.status !== Image.Ready }
+
+                        Image {
+                            id: rightImg
+                            source: vehicleData.rightIndicator ? "qrc:/assets/icons/Active/right_on.png" : "qrc:/assets/icons/Muted/right_off.png"
+                            width: 22; height: 22; fillMode: Image.PreserveAspectFit
+                            visible: status === Image.Ready
+                        }
+                        Text { text: "➡"; color: vehicleData.rightIndicator ? Colors.accentEco : Colors.textMuted; font.pixelSize: 18; visible: rightImg.status !== Image.Ready }
                     }
                 }
+            }
 
-                Column {
-                    anchors.centerIn: parent
-                    anchors.verticalCenterOffset: Math.round(14 * Theme.scale)
-                    width: parent.width
-                    spacing: Math.round(2 * Theme.scale)
-
-                    Text {
-                        width: parent.width
-                        text: vehicleData.speed
-                        color: root.modeColor
-                        horizontalAlignment: Text.AlignHCenter
-                        font.family: Typography.family
-                        font.pixelSize: Math.round(118 * Theme.scale)
-                        font.weight: Font.DemiBold
-                    }
-
-                    Text {
-                        width: parent.width
-                        text: "km/h"
-                        color: Colors.textMuted
-                        horizontalAlignment: Text.AlignHCenter
-                        font.family: Typography.family
-                        font.pixelSize: Typography.bodyLarge
-                        font.weight: Font.Medium
-                    }
-                }
+            // --- CLICKABLE DRIVE MODES CARD ---
+            BaseCard {
+                width: parent.width * 0.28
+                height: parent.height
+                title: "DRIVE MODE"
 
                 Row {
-                    anchors.bottom: parent.bottom
+                    anchors.top: parent.top
+                    anchors.topMargin: 45
                     anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: Math.round(10 * Theme.scale)
+                    spacing: 6
+                    property var modes: ["ECO", "CITY", "SPORT"]
 
-                    StatusPill {
-                        label: vehicleData.headlights ? "HEAD" : "HEAD"
-                        active: vehicleData.headlights
+                    Repeater {
+                        model: parent.modes
+                        Rectangle {
+                            width: 64
+                            height: 36
+                            radius: Theme.controlRadius
+                            color: (vehicleData.driveMode === modelData) ? Colors.surfacePressed : Colors.surfaceSunken
+                            border.width: 1.5
+                            border.color: (vehicleData.driveMode === modelData) ? Colors.borderActive : Colors.borderWarm
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData
+                                color: (vehicleData.driveMode === modelData) ? Colors.borderActive : Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: vehicleData.driveMode = modelData
+                            }
+                        }
                     }
+                }
+            }
 
-                    StatusPill {
-                        label: "HIGH"
-                        active: vehicleData.highBeam
-                    }
+            // --- SYSTEM STATUS DIAGNOSTICS ---
+            BaseCard {
+                width: parent.width * 0.26 - Theme.cardGap
+                height: parent.height
+                title: "SYSTEM STATUS"
 
-                    StatusPill {
-                        label: "HAZ"
-                        active: vehicleData.hazardLights
-                        alert: true
+                Column {
+                    anchors.top: parent.top
+                    anchors.topMargin: 45
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: Theme.cardPadding
+                    spacing: 4
+
+                    property var statusModel: [
+                        {"name": "Battery", "fault": vehicleData.lowBatteryWarning || vehicleData.batteryOverTempWarning},
+                        {"name": "Motor", "fault": vehicleData.motorOverTempWarning},
+                        {"name": "Controller", "fault": vehicleData.communicationFault},
+                        {"name": "Tire System", "fault": false} 
+                    ]
+
+                    Repeater {
+                        model: parent.statusModel
+                        Item {
+                            width: parent.width
+                            height: 16
+
+                            Text {
+                                text: modelData.name
+                                color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Row {
+                                spacing: 6
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    width: 6; height: 6; radius: 3
+                                    color: modelData.fault ? Colors.critical : Colors.accentEco
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: modelData.fault ? "FAULT" : "OK"
+                                    color: Colors.textPrimary
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodySmall
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // =====================================================
+        // 3. BOTTOM TRIP & DISTANCE BAR
+        // =====================================================
         BaseCard {
-            Layout.column: 8
-            Layout.row: 0
-            Layout.columnSpan: 4
-            Layout.rowSpan: 3
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: "Energy"
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: Math.round(10 * Theme.scale)
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text {
-                        Layout.fillWidth: true
-                        text: vehicleData.batteryPercent + "%"
-                        color: vehicleData.lowBatteryWarning ? Colors.warning : Colors.textPrimary
-                        font.family: Typography.family
-                        font.pixelSize: Typography.displaySmall
-                        font.weight: Font.DemiBold
-                    }
-                    Text {
-                        text: vehicleData.rangeKm + " km"
-                        color: Colors.textSecondary
-                        font.family: Typography.family
-                        font.pixelSize: Typography.titleMedium
-                        font.weight: Font.DemiBold
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.round(12 * Theme.scale)
-                    radius: height / 2
-                    color: Colors.surfacePressed
-                    Rectangle {
-                        width: parent.width * Math.max(0, Math.min(1, vehicleData.batteryPercent / 100))
-                        height: parent.height
-                        radius: parent.radius
-                        color: vehicleData.lowBatteryWarning ? Colors.warning : root.modeColor
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text {
-                        Layout.fillWidth: true
-                        text: "Motor " + vehicleData.motorPower.toFixed(1) + " kW"
-                        color: Colors.textMuted
-                        font.family: Typography.family
-                        font.pixelSize: Typography.bodySmall
-                    }
-                    Text {
-                        text: "Regen " + vehicleData.regenLevel
-                        color: Colors.textMuted
-                        font.family: Typography.family
-                        font.pixelSize: Typography.bodySmall
-                    }
-                }
-            }
-        }
-
-        BaseCard {
-            Layout.column: 8
-            Layout.row: 3
-            Layout.columnSpan: 4
-            Layout.rowSpan: 3
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: "Drive Mode"
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: Math.round(8 * Theme.scale)
-
-                Repeater {
-                    model: ["ECO", "CITY", "SPORT"]
-                    ModeButton {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        text: modelData
-                        selected: vehicleData.driveMode === modelData
-                        accentColor: modelData === "SPORT" ? Colors.accentSport
-                            : modelData === "CITY" ? Colors.accentCity
-                            : Colors.accentEco
-                        onClicked: vehicleData.driveMode = modelData
-                    }
-                }
-            }
-        }
-
-        BaseCard {
-            Layout.column: 0
-            Layout.row: 6
-            Layout.columnSpan: 4
-            Layout.rowSpan: 2
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: "Temperature"
-
-            RowLayout {
-                anchors.fill: parent
-                spacing: Theme.cardGap
-
-                MetricReadout {
-                    label: "MOTOR"
-                    value: vehicleData.motorTemp + " C"
-                    alert: vehicleData.motorOverTempWarning
-                }
-
-                MetricReadout {
-                    label: "BATTERY"
-                    value: vehicleData.batteryTemp + " C"
-                    alert: vehicleData.batteryOverTempWarning
-                }
-            }
-        }
-
-        BaseCard {
-            Layout.column: 4
-            Layout.row: 6
-            Layout.columnSpan: 4
-            Layout.rowSpan: 2
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: "Trip"
-
-            RowLayout {
-                anchors.fill: parent
-                spacing: Theme.cardGap
-
-                MetricReadout {
-                    label: "ODOMETER"
-                    value: vehicleData.odometer.toFixed(1) + " km"
-                }
-
-                MetricReadout {
-                    label: "TRIP"
-                    value: vehicleData.tripDistance.toFixed(1) + " km"
-                }
-            }
-        }
-
-        BaseCard {
-            Layout.column: 8
-            Layout.row: 6
-            Layout.columnSpan: 4
-            Layout.rowSpan: 2
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            title: "System"
-            outlineColor: root.activeWarning ? Colors.critical : Colors.borderSubtle
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: Math.round(6 * Theme.scale)
-
-                Text {
-                    Layout.fillWidth: true
-                    text: vehicleData.communicationFault ? "COMMUNICATION FAULT"
-                        : vehicleData.warningMessage.length > 0 ? vehicleData.warningMessage.toUpperCase()
-                        : "READY"
-                    color: root.activeWarning ? Colors.critical : Colors.accentEco
-                    elide: Text.ElideRight
-                    font.family: Typography.family
-                    font.pixelSize: Typography.titleMedium
-                    font.weight: Font.DemiBold
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: "RPM " + vehicleData.rpm + "  |  " + (vehicleData.charging ? "CHARGING" : "NOT CHARGING")
-                    color: Colors.textMuted
-                    elide: Text.ElideRight
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodySmall
-                }
-            }
-        }
-    }
-
-    component IndicatorLamp: Rectangle {
-        property string label: ""
-        property bool active: false
-
-        width: Math.round(46 * Theme.scale)
-        height: Math.round(36 * Theme.scale)
-        radius: Theme.controlRadius
-        color: active ? Qt.rgba(Colors.warning.r, Colors.warning.g, Colors.warning.b, 0.18) : Colors.surfaceRaised
-        border.color: active ? Colors.warning : Colors.borderSubtle
-
-        Text {
-            anchors.centerIn: parent
-            text: parent.label
-            color: parent.active ? Colors.warning : Colors.textMuted
-            font.family: Typography.family
-            font.pixelSize: Typography.bodySmall
-            font.weight: Font.DemiBold
-        }
-    }
-
-    component StatusPill: Rectangle {
-        property string label: ""
-        property bool active: false
-        property bool alert: false
-
-        width: Math.round(68 * Theme.scale)
-        height: Math.round(30 * Theme.scale)
-        radius: Theme.controlRadius
-        color: active ? Qt.rgba((alert ? Colors.warning : root.modeColor).r,
-                                (alert ? Colors.warning : root.modeColor).g,
-                                (alert ? Colors.warning : root.modeColor).b,
-                                0.18)
-                      : Colors.surfaceRaised
-        border.color: active ? (alert ? Colors.warning : root.modeColor) : Colors.borderSubtle
-
-        Text {
-            anchors.centerIn: parent
-            text: parent.label
-            color: parent.active ? (parent.alert ? Colors.warning : root.modeColor) : Colors.textMuted
-            font.family: Typography.family
-            font.pixelSize: Typography.label
-            font.weight: Font.DemiBold
-        }
-    }
-
-    component MetricReadout: Item {
-        property string label: ""
-        property string value: ""
-        property bool alert: false
-
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-
-        Column {
-            anchors.centerIn: parent
             width: parent.width
-            spacing: Math.round(3 * Theme.scale)
+            height: parent.height * 0.15 
+            title: "" 
 
-            Text {
-                width: parent.width
-                text: label
-                color: Colors.textMuted
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                font.family: Typography.family
-                font.pixelSize: Typography.label
-                font.weight: Font.DemiBold
-            }
+            Row {
+                anchors.fill: parent
+                spacing: 0
 
-            Text {
-                width: parent.width
-                text: value
-                color: alert ? Colors.warning : Colors.textPrimary
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                font.family: Typography.family
-                font.pixelSize: Typography.titleMedium
-                font.weight: Font.DemiBold
+                // Odometer
+                Item {
+                    width: parent.width / 3
+                    height: parent.height
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 12
+                        
+                        Image {
+                            id: odoImg
+                            source: "qrc:/assets/icons/Metrics/odometer.png"
+                            width: 24; height: 24; anchors.verticalCenter: parent.verticalCenter
+                            visible: status === Image.Ready
+                        }
+                        
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            Text { text: "ODOMETER"; color: Colors.textMuted; font.family: Typography.family; font.pixelSize: Typography.label; font.bold: true }
+                            Text { text: vehicleData.odometer.toFixed(1) + " km"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.bold: true }
+                        }
+                    }
+                }
+
+                Rectangle { width: 1; height: 30; color: Colors.borderSubtle; anchors.verticalCenter: parent.verticalCenter }
+
+                // Trip A
+                Item {
+                    width: parent.width / 3
+                    height: parent.height
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 12
+                        
+                        Image {
+                            id: tripaImg
+                            source: "qrc:/assets/icons/Metrics/trip_a.png"
+                            width: 24; height: 24; anchors.verticalCenter: parent.verticalCenter
+                            visible: status === Image.Ready
+                        }
+                        
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            Text { text: "TRIP A"; color: Colors.textMuted; font.family: Typography.family; font.pixelSize: Typography.label; font.bold: true }
+                            Text { text: vehicleData.tripDistance.toFixed(1) + " km"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.bold: true }
+                        }
+                    }
+                }
+
+                Rectangle { width: 1; height: 30; color: Colors.borderSubtle; anchors.verticalCenter: parent.verticalCenter }
+
+                // Trip B
+                Item {
+                    width: parent.width / 3
+                    height: parent.height
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 12
+                        
+                        Image {
+                            id: tripbImg
+                            source: "qrc:/assets/icons/Metrics/trip_b.png"
+                            width: 24; height: 24; anchors.verticalCenter: parent.verticalCenter
+                            visible: status === Image.Ready
+                        }
+                        
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            Text { text: "TRIP B"; color: Colors.textMuted; font.family: Typography.family; font.pixelSize: Typography.label; font.bold: true }
+                            Text { text: "087.3 km"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.bold: true }
+                        }
+                    }
+                }
             }
         }
     }

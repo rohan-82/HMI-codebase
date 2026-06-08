@@ -3,6 +3,7 @@ import QtQuick.Controls
 import EvHmi
 
 Item {
+    property int activeTab: 0
     Row {
         anchors.fill: parent
         spacing: Theme.cardGap
@@ -11,7 +12,7 @@ Item {
         // NOW PLAYING
         // =====================================================
         BaseCard {
-            width: parent.width * 0.68
+            width: parent.width * 0.68 - Theme.cardGap
             height: parent.height
 
             title: "Now Playing"
@@ -19,23 +20,26 @@ Item {
             Column {
                 anchors.fill: parent
                 anchors.margins: 8
-                spacing: 8
+                spacing: 16
 
                 // ==========================================
                 // COVER + METADATA
                 // ==========================================
                 Row {
                     width: parent.width
-                    spacing: 20
+                    spacing: 40
+
+                    Rectangle{
+                       width: 20
+                        height: 20 
+                        color: Colors.surfaceRaised
+                    }
 
                     Rectangle {
-                        width: 110
-                        height: 110
-
-                        
+                        width: 170
+                        height: 170
 
                         color: Colors.surfaceRaised
-
                         border.width: 2
                         border.color: Colors.borderActive
 
@@ -64,12 +68,12 @@ Item {
                             color: Colors.accentCity
 
                             font.family: Typography.family
-                            font.pixelSize: 46
+                            font.pixelSize: Typography.titleLarge
                         }
                     }
 
                     Column {
-                        width: parent.width - 160
+                        width: parent.width - 200
 
                         anchors.verticalCenter: parent.verticalCenter
 
@@ -94,7 +98,7 @@ Item {
                             color: Colors.textSecondary
 
                             font.family: Typography.family
-                            font.pixelSize: Typography.titleSmall
+                            font.pixelSize: Typography.titleMedium
 
                             wrapMode: Text.WordWrap
                         }
@@ -105,7 +109,7 @@ Item {
                             color: Colors.textMuted
 
                             font.family: Typography.family
-                            font.pixelSize: Typography.bodyMedium
+                            font.pixelSize: Typography.bodyLarge
 
                             wrapMode: Text.WordWrap
                         }
@@ -120,11 +124,11 @@ Item {
                     id: progressSectionContainer
                     width: parent.width
                     // Height is the slider height + gap + text height
-                    height: progressSlider.height + 6 + 16 
+                    height: progressSlider.height + 10 + 20
 
                     Slider {
                         id: progressSlider
-                        width: parent.width - 10
+                        width: parent.width - 16
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.top
 
@@ -148,7 +152,7 @@ Item {
                         text: musicPlayer.currentTime
                         color: Colors.textSecondary
                         font.family: Typography.family
-                        font.pixelSize: Typography.bodySmall
+                        font.pixelSize: Typography.bodyMedium
                     }
 
                     Text {
@@ -160,7 +164,7 @@ Item {
                         text: musicPlayer.totalTime
                         color: Colors.textSecondary
                         font.family: Typography.family
-                        font.pixelSize: Typography.bodySmall
+                        font.pixelSize: Typography.bodyMedium
                     }
                 }
 
@@ -170,13 +174,13 @@ Item {
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    spacing: 40
+                    spacing: 60
 
                     Rectangle {
-                        width: 52
-                        height: 52
+                        width: 75
+                        height: 75
 
-                        radius: 10
+                        radius: 15
                         anchors.verticalCenter: parent.verticalCenter
                         
 
@@ -188,8 +192,8 @@ Item {
                         Image {
                             anchors.centerIn: parent
 
-                            width: 22
-                            height: 22
+                            width: 30
+                            height: 30
 
                             source: Colors.dayNightMode === "day"
                                      ? "qrc:/assets/icons/Light/MusicPage/previous.png"
@@ -203,10 +207,10 @@ Item {
                     }
 
                     Rectangle {
-                        width: 68
-                        height: 68
+                        width: 100
+                        height: 100
 
-                        radius: 34
+                        radius: 50
 
                         color: Colors.surfaceRaised
 
@@ -216,8 +220,8 @@ Item {
                         Image {
                             anchors.centerIn: parent
 
-                            width: 30
-                            height: 30
+                            width: 40
+                            height: 40
 
                             source: musicPlayer.isPlaying
                                     ? Colors.dayNightMode === "day"
@@ -235,10 +239,10 @@ Item {
                     }
 
                     Rectangle {
-                        width: 52
-                        height: 52
+                        width: 75
+                        height: 75
 
-                        radius: 10
+                        radius: 15
                         anchors.verticalCenter: parent.verticalCenter
 
                         color: Colors.surfaceRaised
@@ -249,8 +253,8 @@ Item {
                         Image {
                             anchors.centerIn: parent
 
-                            width: 22
-                            height: 22
+                            width: 30
+                            height: 30
 
                             source: Colors.dayNightMode === "day"
                                      ? "qrc:/assets/icons/Light/MusicPage/next.png"
@@ -278,10 +282,10 @@ Item {
                     spacing: 14
 
                     Rectangle {
-                        width: 120
-                        height: 36
+                        width: 192
+                        height: 55
 
-                        radius: 8
+                        radius: 12
 
                         color: musicPlayer.shuffleEnabled
                                ? Colors.surfacePressed
@@ -293,11 +297,11 @@ Item {
                         Row {
                             anchors.centerIn: parent
 
-                            spacing: 8
+                            spacing: 12
 
                             Image {
-                                width: 16
-                                height: 16
+                                width: 25
+                                height: 25
 
                                 source: Colors.dayNightMode === "day"
                                          ? "qrc:/assets/icons/Light/MusicPage/shuffle.png"
@@ -310,7 +314,7 @@ Item {
                                 color: Colors.textPrimary
 
                                 font.family: Typography.family
-                                font.pixelSize: Typography.bodySmall
+                                font.pixelSize: Typography.bodyMedium
                             }
                         }
 
@@ -321,10 +325,10 @@ Item {
                     }
 
                     Rectangle {
-                        width: 120
-                        height: 36
+                        width: 192
+                        height: 55
 
-                        radius: 8
+                        radius: 12
 
                         color: musicPlayer.repeatEnabled
                                ? Colors.surfacePressed
@@ -336,11 +340,11 @@ Item {
                         Row {
                             anchors.centerIn: parent
 
-                            spacing: 8
+                            spacing: 12
 
                             Image {
-                                width: 16
-                                height: 16
+                                width: 25
+                                height: 25
 
                                 source: Colors.dayNightMode === "day"
                                          ? "qrc:/assets/icons/Light/MusicPage/repeat.png"
@@ -353,7 +357,7 @@ Item {
                                 color: Colors.textPrimary
 
                                 font.family: Typography.family
-                                font.pixelSize: Typography.bodySmall
+                                font.pixelSize: Typography.bodyMedium
                             }
                         }
 
@@ -370,198 +374,622 @@ Item {
         // PLAYBACK INFO
         // =====================================================
         BaseCard {
-            width: parent.width * 0.32 - Theme.cardGap
+            
+            width: parent.width * 0.32 
             height: parent.height
 
-            title: "Playback"
+            title: ""
 
             Column {
                 anchors.fill: parent
                 anchors.margins: 10
-
-                spacing: 8
-
-                Text {
-                    text: "Track"
-
-                    color: Colors.textSecondary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodySmall
-                }
-
-                Text {
-                    text: musicPlayer.currentTrackIndex
-                          + " / "
-                          + musicPlayer.trackCount
-
-                    color: Colors.textPrimary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.titleMedium
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Colors.borderSubtle
-                }
-
-                Text {
-                    text: "Status"
-
-                    color: Colors.textSecondary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodySmall
-                }
-
-                Text {
-                    text: musicPlayer.isPlaying
-                          ? "Playing"
-                          : "Paused"
-
-                    color: musicPlayer.isPlaying
-                           ? Colors.accentEco
-                           : Colors.textPrimary
-
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodyLarge
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Colors.borderSubtle
-                }
+                spacing: 10
 
                 Row {
-                    spacing: 12
+                    width: parent.width
+                    spacing: 6
 
-                    Column {
-                        spacing: 4
+                    Repeater {
+                        model: ["Playback", "Search", "Queue", "Lyrics"]
 
-                        Text {
-                            text: "Volume"
-
-                            color: Colors.textSecondary
-
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodySmall
-                        }
-
-                        Text {
-                            text: Math.round(
-                                      musicPlayer.volume
-                                  ) + "%"
-
-                            color: Colors.textPrimary
-
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodyLarge
-                        }
-
-                        Rectangle {
-                            width: 46
-                            height: 42
+                        delegate: Rectangle {
+                            width: (parent.width - 16) / 4
+                            height: 34
 
                             radius: 8
 
-                            color: Colors.surfaceRaised
+                            color: activeTab === index
+                                ? Colors.surfacePressed
+                                : Colors.surfaceRaised
 
                             border.width: 1
-                            border.color: Colors.borderWarm
+                            border.color: activeTab === index
+                                        ? Colors.borderActive
+                                        : Colors.borderWarm
 
-                            Image {
+                            Text {
                                 anchors.centerIn: parent
+                                text: modelData
 
-                                width: 20
-                                height: 20
+                                color: Colors.textPrimary
 
-                                source: musicPlayer.muted
-                                        ? Colors.dayNightMode === "day"
-                                          ? "qrc:/assets/icons/Light/MusicPage/volume-mute.png"
-                                          : "qrc:/assets/icons/Dark/MusicPage/volume-mute.png"
-                                        : Colors.dayNightMode === "day"
-                                          ? "qrc:/assets/icons/Light/MusicPage/volume-loud.png"
-                                          : "qrc:/assets/icons/Dark/MusicPage/volume-loud.png"
-                                        }
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                            }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: musicPlayer.toggleMute()
+                                onClicked: activeTab = index
+                            }
+                        }
+                    }
+                }
+
+                Loader {
+                    width: parent.width
+                    height: parent.height - 50
+
+                    sourceComponent:
+                        activeTab === 0
+                        ? playbackTab
+                        : activeTab === 1
+                        ? searchTab
+                        : activeTab === 2
+                            ? queueTab
+                            : lyricsTab
+                }
+            }
+
+            Component {
+                id: playbackTab
+
+                Column {
+                    width: parent.width
+                    spacing: 8
+
+                    Text {
+                        text: "Track"
+                        color: Colors.textSecondary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodySmall
+                    }
+
+                    Text {
+                        text: musicPlayer.currentTrackIndex
+                            + " / "
+                            + musicPlayer.trackCount
+
+                        color: Colors.textPrimary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.titleMedium
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Colors.borderSubtle
+                    }
+
+                    Text {
+                        text: "Status"
+                        color: Colors.textSecondary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodySmall
+                    }
+
+                    Text {
+                        text: musicPlayer.isPlaying
+                            ? "Playing"
+                            : "Paused"
+
+                        color: musicPlayer.isPlaying
+                            ? Colors.accentEco
+                            : Colors.textPrimary
+
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyLarge
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Colors.borderSubtle
+                    }
+
+                    Row {
+                        spacing: 12
+
+                        Column {
+                            spacing: 4
+
+                            Text {
+                                text: "Volume"
+                                color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                            }
+
+                            Text {
+                                text: Math.round(
+                                        musicPlayer.volume
+                                    ) + "%"
+
+                                color: Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodyLarge
+                            }
+
+                            Rectangle {
+                                width: 46
+                                height: 42
+
+                                radius: 8
+
+                                color: Colors.surfaceRaised
+
+                                border.width: 1
+                                border.color: Colors.borderWarm
+
+                                Image {
+                                    anchors.centerIn: parent
+
+                                    width: 20
+                                    height: 20
+
+                                    source: musicPlayer.muted
+                                            ? Colors.dayNightMode === "day"
+                                            ? "qrc:/assets/icons/Light/MusicPage/volume-mute.png"
+                                            : "qrc:/assets/icons/Dark/MusicPage/volume-mute.png"
+                                            : Colors.dayNightMode === "night"
+                                            ? "qrc:/assets/icons/Dark/MusicPage/volume-loud.png"
+                                            : "qrc:/assets/icons/Light/MusicPage/volume-loud.png"
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: musicPlayer.toggleMute()
+                                }
+                            }
+                        }
+
+                        Slider {
+                            orientation: Qt.Vertical
+
+                            width: 36
+                            height: 100
+
+                            from: 0
+                            to: 100
+
+                            value: musicPlayer.volume
+
+                            onValueChanged: {
+                                musicPlayer.volume = value
                             }
                         }
                     }
 
-                    Slider {
-                        orientation: Qt.Vertical
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Colors.borderSubtle
+                    }
 
-                        width: 36
-                        height: 100
+                    Row {
+                        width: parent.width
+                        spacing: 60
 
-                        from: 0
-                        to: 100
+                        Column {
+                            width: parent.width / 2 
+                            spacing: 2
 
-                        value: musicPlayer.volume
+                            Text {
+                                text: "Shuffle"
+                                color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                            }
 
-                        onValueChanged: {
-                            musicPlayer.volume = value
+                            Text {
+                                text: musicPlayer.shuffleEnabled
+                                    ? "ON"
+                                    : "OFF"
+
+                                color: Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodyLarge
+                            }
+                        }
+
+                        Column {
+                            width: parent.width / 2
+                            spacing: 2
+
+                            Text {
+                                horizontalAlignment: Text.AlignRight
+                                text: "Repeat"
+                                color: Colors.textSecondary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodySmall
+                            }
+
+                            Text {
+                                horizontalAlignment: Text.AlignRight
+                                text: musicPlayer.repeatEnabled
+                                    ? "ON"
+                                    : "OFF"
+
+                                color: Colors.textPrimary
+                                font.family: Typography.family
+                                font.pixelSize: Typography.bodyLarge
+                            }
                         }
                     }
                 }
+            }
 
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Colors.borderSubtle
-                }
-
-                Row {
-                    width: parent.width
-                    spacing: 60 
+            Component {
+                    id: searchTab
 
                     Column {
-                        width: parent.width * 0.5
-                        spacing: 2
-                        Text {
-                            text: "Shuffle"
-                            color: Colors.textSecondary
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodySmall
+                        width: parent.width
+                        spacing: 10
+
+                        // ==========================================
+                        // SEARCH BAR
+                        // ==========================================
+                        Row {
+                            width: parent.width
+                            spacing: 6
+
+                            TextField {
+                                id: searchField
+
+                                width: parent.width - 46
+
+                                placeholderText: "Search Spotify..."
+
+                                onAccepted: {
+                                    if (text.length > 0)
+                                        spotifyApi.searchTracks(text)
+                                }
+                            }
+
+                            Rectangle {
+                                id: searchButton
+
+                                width: 40
+                                height: searchField.height
+
+                                radius: 6
+
+                                color: searchMouse.pressed
+                                    ? Colors.surfacePressed
+                                    : Colors.surfaceRaised
+
+                                border.width: 1
+                                border.color: Colors.borderWarm
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 100
+                                    }
+                                }
+
+                                Image {
+                                    anchors.centerIn: parent
+                                    width: 18
+                                    height: 18
+                                    source: Colors.dayNightMode === "day"
+                                        ? "qrc:/assets/icons/Light/MusicPage/search.png"
+                                        : "qrc:/assets/icons/Dark/MusicPage/search.png"
+
+                                }
+
+                                MouseArea {
+                                    id: searchMouse
+
+                                    anchors.fill: parent
+
+                                    onClicked: {
+                                        if(searchField.text.length > 0)
+                                            spotifyApi.searchTracks(searchField.text)
+                                    }
+                                }
+                            }
                         }
-                        Text {
-                            text: musicPlayer.shuffleEnabled ? "ON" : "OFF"
-                            color: Colors.textPrimary
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodyLarge
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Colors.borderSubtle
                         }
-                    }
-                    
-                    Column {
-                        width: parent.width * 0.5
-                        spacing: 2
-                        Text {
-                            horizontalAlignment: Text.AlignRight
-                            text: "Repeat" 
-                            color: Colors.textSecondary
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodySmall
-                        }
-                        Text {
-                            horizontalAlignment: Text.AlignRight 
-                            text: musicPlayer.repeatEnabled ? "ON" : "OFF"
-                            color: Colors.textPrimary
-                            font.family: Typography.family
-                            font.pixelSize: Typography.bodyLarge
+
+                        // ==========================================
+                        // RESULTS
+                        // ==========================================
+                        ListView {
+                            width: parent.width
+                            height: 250
+
+                            clip: true
+
+                            model: spotifyApi.tracks
+
+                            delegate: Rectangle {
+                                width: ListView.view.width
+                                height: 64
+
+                                radius: 6
+
+                                color: Colors.surfaceRaised
+
+                                border.width: 1
+                                border.color: Colors.borderWarm
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+
+                                    spacing: 10
+
+                                    Image {
+                                        width: 48
+                                        height: 48
+
+                                        source: modelData.imageUrl
+
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        width: parent.width - 60
+
+                                        spacing: 2
+
+                                        Text {
+                                            text: modelData.title
+
+                                            color: Colors.textPrimary
+
+                                            font.family: Typography.family
+                                            font.pixelSize: Typography.bodyMedium
+
+                                            elide: Text.ElideRight
+
+                                            width: parent.width
+                                        }
+
+                                        Text {
+                                            text: modelData.artist
+
+                                            color: Colors.textSecondary
+
+                                            font.family: Typography.family
+                                            font.pixelSize: Typography.bodySmall
+
+                                            elide: Text.ElideRight
+
+                                            width: parent.width
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    onClicked: {
+                                        spotifyApi.selectTrack(index)
+                                    }
+                                }
+                            }
+
+                            ScrollBar.vertical: ScrollBar { }
                         }
                     }
                 }
 
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Colors.borderSubtle
+            Component {
+                id: queueTab
+
+                Item {
+                    anchors.fill: parent
+
+                    Text {
+                        id: queueTitle
+
+                        text: "Playback Queue"
+
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+
+                        color: Colors.textPrimary
+
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyLarge
+                    }
+
+                    Rectangle {
+                        id: queueDivider
+
+                        anchors.top: queueTitle.bottom
+                        anchors.topMargin: 8
+
+                        width: parent.width
+                        height: 1
+
+                        color: Colors.borderSubtle
+                    }
+
+                    ListView {
+                        id: queueList
+
+                        anchors.top: queueDivider.bottom
+                        anchors.topMargin: 8
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+
+                        clip: true
+
+                        spacing: 4
+
+                        model: musicPlayer.playlistTitles
+
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: 56
+
+                            color: index === musicPlayer.currentTrackIndex - 1
+                                ? Colors.surfacePressed
+                                : Colors.surfaceRaised
+
+                            border.width: index === musicPlayer.currentTrackIndex - 1
+                                ? 1
+                                : 0.5
+
+                            border.color: index === musicPlayer.currentTrackIndex - 1
+                                ? Colors.borderActive
+                                : Colors.borderWarm
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.margins: 8
+
+                                spacing: 10
+
+                                Rectangle {
+                                    width: 32
+                                    height: 32
+
+                                    radius: 4
+
+                                    color: Colors.surfacePressed
+
+                                    Text {
+                                        anchors.centerIn: parent
+
+                                        text: index === musicPlayer.currentTrackIndex - 1
+                                            ? "▶"
+                                            : "♪"
+
+                                        color: Colors.textPrimary
+
+                                        font.family: Typography.family
+                                        font.pixelSize: Typography.bodyMedium
+                                    }
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    width: parent.width - 60
+
+                                    text: modelData
+
+                                    color: Colors.textPrimary
+
+                                    font.family: Typography.family
+
+                                    font.pixelSize:
+                                        index === musicPlayer.currentTrackIndex - 1
+                                        ? Typography.bodyMedium
+                                        : Typography.bodySmall
+
+                                    font.bold:
+                                        index === musicPlayer.currentTrackIndex - 1
+
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+
+                                onClicked: {
+                                    musicPlayer.playTrack(index)
+                                }
+                            }
+                        }
+
+                        ScrollBar.vertical: ScrollBar {
+                            policy: ScrollBar.AsNeeded
+                        }
+                    }
+                }
+            }
+
+            Component {
+                id: lyricsTab
+
+                Column {
+                    anchors.fill: parent
+
+                    spacing: 20
+
+                    Text {
+                        text: "Lyrics"
+
+                        color: Colors.textPrimary
+
+                        font.family: Typography.family
+                        font.pixelSize: Typography.titleLarge
+                    }
+
+                    Item {
+                        width: parent.width
+                        height: 20
+                    }
+
+                    Text {
+                        text: musicPlayer.previousLyric
+                        opacity: 0.4
+                        width: parent.width
+
+                        horizontalAlignment: Text.AlignHCenter
+
+                        color: Colors.textMuted
+
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyLarge
+
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        text: musicPlayer.currentLyric
+
+                        width: parent.width
+
+                        horizontalAlignment: Text.AlignHCenter
+
+                        color: Colors.textPrimary
+
+                        font.family: Typography.family
+                        font.pixelSize: 22
+
+                        font.bold: true
+
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        text: musicPlayer.nextLyric
+                        opacity: 0.4
+                        width: parent.width
+
+                        horizontalAlignment: Text.AlignHCenter
+
+                        color: Colors.textMuted
+
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyLarge
+
+                        wrapMode: Text.WordWrap
+                    }
                 }
             }
         }

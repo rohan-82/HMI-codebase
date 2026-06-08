@@ -4,7 +4,7 @@ import QtQuick
 import EvHmi
 
 QtObject {
-    property real scale: 1.0
+    property real scale: 1.6
 
     readonly property string family: "Inter"
 
@@ -19,5 +19,6 @@ QtObject {
     readonly property int label: Math.round(12 * scale)
 
     property string currentLanguage: "en"
+    property string timeFormat: "HH:mm"
 
 }

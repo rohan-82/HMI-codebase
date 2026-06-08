@@ -28,6 +28,9 @@ Item {
         { "key": "tab_diagnostics" }
     ]
 
+    // Internal state helper to see if we should show warnings or dashboard info
+    readonly property bool hasWarning: vehicleData.communicationFault || vehicleData.warningMessage.length > 0
+
     // Background Canvas
     Rectangle {
         anchors.fill: parent
@@ -36,8 +39,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             gradient: Gradient {
-                GradientStop { position: 0.0; color: "#090B0D" }
-                GradientStop { position: 0.58; color: Colors.backgroundPrimary }
+                GradientStop { position: 0.0; color: Colors.borderActive }                
                 GradientStop { position: 1.0; color: Colors.backgroundPrimary }
             }
         }
@@ -69,7 +71,6 @@ Item {
             }
 
             Text {
-                // Now directly links to your updated global Typography module!
                 text: vehicleData.communicationFault 
                       ? root.translations["offline"][Typography.currentLanguage] 
                       : root.translations["live_telemetry"][Typography.currentLanguage]
@@ -108,7 +109,7 @@ Item {
     }
 
     // =====================================================
-    // SYSTEM DIAGNOSTICS & WARNING BANNER
+    // DYNAMIC WIDGET / WARNING BANNER
     // =====================================================
     Rectangle {
         id: warningBanner
@@ -119,24 +120,28 @@ Item {
         anchors.rightMargin: Theme.pageMargin
         height: Math.round(40 * Theme.scale)
         radius: Theme.controlRadius
-        color: vehicleData.communicationFault || vehicleData.warningMessage.length > 0
+        
+        // Colors clear out to a clean, subtle surface panel background if everything is fine
+        color: root.hasWarning
             ? Qt.rgba(Colors.critical.r, Colors.critical.g, Colors.critical.b, 0.16)
-            : Qt.rgba(Colors.accentEco.r, Colors.accentEco.g, Colors.accentEco.b, 0.11)
-        border.color: vehicleData.communicationFault || vehicleData.warningMessage.length > 0
+            : Colors.surfaceRaised
+        border.color: root.hasWarning
             ? Colors.critical
             : Colors.borderSubtle
         border.width: 1
 
+        // --- SECTION A: ACTIVE WARNING LAYOUT ---
         Row {
             anchors.fill: parent
             anchors.leftMargin: Math.round(14 * Theme.scale)
             anchors.rightMargin: Math.round(14 * Theme.scale)
             spacing: Math.round(10 * Theme.scale)
+            visible: root.hasWarning
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: vehicleData.communicationFault || vehicleData.warningMessage.length > 0 ? "!" : "OK"
-                color: vehicleData.communicationFault || vehicleData.warningMessage.length > 0 ? Colors.critical : Colors.accentEco
+                text: "!"
+                color: Colors.critical
                 font.family: Typography.family
                 font.pixelSize: Typography.bodySmall
                 font.weight: Font.DemiBold
@@ -145,14 +150,9 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - Math.round(42 * Theme.scale)
-                
-                // Reactive warning text translated via global font engine state
                 text: vehicleData.communicationFault 
                       ? root.translations["comm_fault"][Typography.currentLanguage]
-                      : vehicleData.warningMessage.length > 0 
-                        ? vehicleData.warningMessage.toUpperCase()
-                        : root.translations["system_nominal"][Typography.currentLanguage]
-                        
+                      : vehicleData.warningMessage.toUpperCase()
                 color: Colors.textPrimary
                 elide: Text.ElideRight
                 font.family: Typography.family
@@ -160,8 +160,78 @@ Item {
                 font.weight: Font.DemiBold
             }
         }
-    }
 
+        // --- SECTION B: TIME & WEATHER DASHBOARD LAYOUT ---
+        Item {
+            anchors.fill: parent
+            visible: !root.hasWarning
+
+            // Left Side: Live Clock
+            Text {
+                id: clockDisplay
+                anchors.left: parent.left
+                anchors.leftMargin: Math.round(14 * Theme.scale)
+                anchors.verticalCenter: parent.verticalCenter
+                
+                // Initial load calculation
+                text: getOffsetTime()
+                
+                color: Colors.textPrimary
+                font.family: Typography.family
+                font.pixelSize: Typography.bodySmall
+                font.weight: Font.DemiBold
+
+                // JavaScript helper function to calculate GMT + 5:30 safely
+                function getOffsetTime() {
+                    let date = new Date();
+                    
+                    // 1. Get current UTC values
+                    let utcHours = date.getUTCHours();
+                    let utcMinutes = date.getUTCMinutes();
+                    
+                    // 2. Apply the +5 hours and +30 minutes offset
+                    date.setUTCHours(utcHours + 5);
+                    date.setUTCMinutes(utcMinutes + 30);
+                    
+                    // 3. Format the adjusted time based on your Settings page selection
+                    return Qt.formatTime(date, Typography.timeFormat);
+                }
+
+                // Updates the clock rendering every second
+                Timer {
+                    interval: 1000
+                    running: true
+                    repeat: true
+                    onTriggered: clockDisplay.text = clockDisplay.getOffsetTime()
+                }
+            }
+
+            // Right Side: Weather Status Info
+            Row {
+                anchors.right: parent.right
+                anchors.rightMargin: Math.round(14 * Theme.scale)
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Math.round(8 * Theme.scale)
+
+                Text {
+                    // Check if weatherData backend is available, or use placeholder strings
+                    text: typeof weatherData !== 'undefined' ? weatherData.conditionText : "Sunny"
+                    color: Colors.textSecondary
+                    font.family: Typography.family
+                    font.pixelSize: Typography.bodySmall
+                    font.weight: Font.Medium
+                }
+
+                Text {
+                    text: typeof weatherData !== 'undefined' ? Math.round(weatherData.temperature) + "°C" : "24°C"
+                    color: Colors.textPrimary
+                    font.family: Typography.family
+                    font.pixelSize: Typography.bodySmall
+                    font.weight: Font.DemiBold
+                }
+            }
+        }
+    }
 
     // =====================================================
     // MAIN CONTENT PAGE LOADER
@@ -181,7 +251,6 @@ Item {
             : root.currentPageIndex === 2 ? settingsPage
             : diagnosticsPage
     }
-
 
     // =====================================================
     // BOTTOM NAVIGATION BAR
@@ -223,10 +292,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        
-                        // Dynamically updates translation values for navbar labels instantly
                         text: root.translations[root.pages[index].key][Typography.currentLanguage]
-                        
                         color: root.currentPageIndex === index
                                  ? Colors.textPrimary
                                  : Colors.textMuted
@@ -245,11 +311,9 @@ Item {
             }
         }
     }
-
     
     Component { id: homePage; HomePage {} }
     Component { id: musicPage; MusicPage {} }
     Component { id: settingsPage; SettingsPage {} }
     Component { id: diagnosticsPage; DiagnosticsPage {} }
-    
 }

@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QRandomGenerator>
 #include <QMediaMetaData>
+#include <QDebug>
 
 LocalMusicPlayer::LocalMusicPlayer(QObject *parent)
     : QObject(parent)
@@ -98,6 +99,15 @@ LocalMusicPlayer::LocalMusicPlayer(QObject *parent)
             emit albumNameChanged();
         }
     );
+
+    connect(
+        m_player,
+        &QMediaPlayer::positionChanged,
+        this,
+        [this](qint64 position)
+        {
+            updateCurrentLyric(position);
+        });
 }
 
 void LocalMusicPlayer::loadTrack(int index)
@@ -108,7 +118,7 @@ void LocalMusicPlayer::loadTrack(int index)
     m_currentIndex = index;
 
     QString songPath = "/home/burner/Test06/assets/music/" + m_playlist[index];
-    QString coverPath = "/home/burner/Test06/assets/albumcovers/" + QFileInfo(songPath).baseName() + ".png";
+    QString coverPath = "/home/burner/Test06/assets/music/albumcovers/" + QFileInfo(songPath).baseName() + ".png";
 
     if (QFile::exists(coverPath))
     {
@@ -132,7 +142,121 @@ void LocalMusicPlayer::loadTrack(int index)
     emit albumNameChanged();
     emit albumArtUrlChanged();
 
+    loadLyrics(m_trackTitle);
+
     m_player->setSource(QUrl::fromLocalFile(songPath));
+}
+
+void LocalMusicPlayer::loadLyrics(const QString &trackName)
+{
+    m_lyrics.clear();
+    m_lyricList.clear();
+
+    QString filePath = "../assets/music/lyrics/" + trackName + ".lrc";
+
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "FAILED OPEN:" << filePath;
+        return;
+    }
+
+    QTextStream in(&file);
+
+    QRegularExpression re(
+        R"(\[(\d+):(\d+\.\d+)\](.*))");
+
+    while (!in.atEnd())
+    {   
+        QString line = in.readLine();
+
+        auto match = re.match(line);
+
+        if (!match.hasMatch())
+        {
+            qDebug() << "NO MATCH" << line;
+            continue;
+        }
+
+        int minutes =
+            match.captured(1).toInt();
+
+        double seconds =
+            match.captured(2).toDouble();
+
+        QString text =
+            match.captured(3).trimmed();
+
+        LyricLine lyric;
+
+        lyric.timestamp =
+            (minutes * 60000)
+            + (seconds * 1000);
+
+        lyric.text = text;
+
+        m_lyrics.append(lyric);
+        m_lyricList.append(text);
+    }
+    emit lyricsLoadedChanged();
+}
+
+void LocalMusicPlayer::updateCurrentLyric(
+    qint64 position)
+{
+    for (int i = m_lyrics.size() - 1;
+         i >= 0;
+         --i)
+    {
+        if (position >=
+            m_lyrics[i].timestamp)
+        {
+            if (m_currentLyric != m_lyrics[i].text)
+            {
+                m_currentLyric = m_lyrics[i].text;
+                m_currentLyricIndex = i;
+
+                m_previousLyric =
+                    (i > 0)
+                        ? m_lyrics[i - 1].text
+                        : "";
+
+                m_nextLyric =
+                    (i < m_lyrics.size() - 1)
+                        ? m_lyrics[i + 1].text
+                        : "";
+
+                emit currentLyricChanged();
+                emit currentLyricIndexChanged();
+            }
+            return;
+        }
+    }
+}
+
+void LocalMusicPlayer::playTrack(int index)
+{
+    if (index < 0 || index >= m_playlist.size())
+        return;
+
+    loadTrack(index);
+
+    m_player->play();
+
+    emit isPlayingChanged();
+}
+
+QStringList LocalMusicPlayer::playlistTitles() const
+{
+    QStringList titles;
+
+    for (const QString &track : m_playlist)
+    {
+        titles.append(QFileInfo(track).baseName());
+    }
+
+    return titles;
 }
 
 QString LocalMusicPlayer::trackTitle() const
@@ -317,10 +441,7 @@ void LocalMusicPlayer::setVolume(int volume)
 
     m_volume = volume;
 
-    // Qt expects 0.0 - 1.0
-    m_audioOutput->setVolume(
-        static_cast<float>(m_volume) / 100.0f
-    );
+    m_audioOutput->setVolume(m_volume / 100.0);
 
     emit volumeChanged();
 }
@@ -340,4 +461,29 @@ void LocalMusicPlayer::setMuted(bool muted)
 void LocalMusicPlayer::toggleMute()
 {
     setMuted(!m_muted);
+}
+
+QString LocalMusicPlayer::currentLyric() const
+{
+    return m_currentLyric;
+}
+
+QString LocalMusicPlayer::previousLyric() const
+{
+    return m_previousLyric;
+}
+
+QString LocalMusicPlayer::nextLyric() const
+{
+    return m_nextLyric;
+}
+
+QStringList LocalMusicPlayer::lyricList() const
+{
+    return m_lyricList;
+}
+
+int LocalMusicPlayer::currentLyricIndex() const
+{
+    return m_currentLyricIndex;
 }

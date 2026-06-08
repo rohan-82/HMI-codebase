@@ -7,6 +7,7 @@
 #include "backend/TelemetrySimulator.h"
 #include "backend/WarningManager.h"
 #include "backend/LocalMusicPlayer.h"
+#include "backend/SpotifyAPIManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
 
     VehicleData vehicleData;
     LocalMusicPlayer musicPlayer;
+    SpotifyApiManager spotifyApi;
 
     TelemetrySimulator simulator(&vehicleData);
 
@@ -54,6 +56,11 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "musicPlayer",
         &musicPlayer
+    );
+
+    engine.rootContext()->setContextProperty(
+        "spotifyApi",
+        &spotifyApi
     );
 
     #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)

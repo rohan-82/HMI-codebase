@@ -5,6 +5,15 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QStringList>
+#include <QFile>
+#include <QRegularExpression>
+#include <QVector>
+
+struct LyricLine
+{
+    qint64 timestamp;
+    QString text;
+};
 
 class LocalMusicPlayer : public QObject
 {
@@ -33,6 +42,14 @@ class LocalMusicPlayer : public QObject
     Q_PROPERTY(QString albumName READ albumName NOTIFY albumNameChanged)
 
     Q_PROPERTY(QString albumArtUrl READ albumArtUrl NOTIFY albumArtUrlChanged)
+
+    Q_PROPERTY(QString previousLyric READ previousLyric NOTIFY currentLyricChanged)
+    Q_PROPERTY(QString currentLyric READ currentLyric NOTIFY currentLyricChanged)
+    Q_PROPERTY(QString nextLyric READ nextLyric NOTIFY currentLyricChanged)
+    Q_PROPERTY(QStringList lyricList READ lyricList NOTIFY lyricsLoadedChanged)
+    Q_PROPERTY(int currentLyricIndex READ currentLyricIndex NOTIFY currentLyricIndexChanged)
+    
+    Q_PROPERTY(QStringList playlistTitles READ playlistTitles NOTIFY trackCountChanged)
 
 public:
     explicit LocalMusicPlayer(QObject *parent = nullptr);
@@ -70,12 +87,22 @@ public:
     Q_INVOKABLE void nextTrack();
     Q_INVOKABLE void previousTrack();
 
+    Q_INVOKABLE void playTrack(int index);
+
     Q_INVOKABLE void seek(qint64 position);
 
     Q_INVOKABLE void toggleShuffle();
     Q_INVOKABLE void toggleRepeat();
 
     Q_INVOKABLE void toggleMute();
+
+    QString currentLyric() const;
+    QString previousLyric() const;
+    QString nextLyric() const;
+    QStringList lyricList() const;
+    int currentLyricIndex() const;
+
+    QStringList playlistTitles() const;
 
 signals:
     void trackTitleChanged();
@@ -99,7 +126,10 @@ signals:
     void albumNameChanged();
 
     void albumArtUrlChanged();
-
+    void currentLyricChanged();
+    void lyricsLoadedChanged();
+    void currentLyricIndexChanged();
+    
 private:
     QMediaPlayer *m_player;
     QAudioOutput *m_audioOutput;
@@ -120,6 +150,15 @@ private:
     QString m_artistName = "Unknown Artist";
     QString m_albumName = "Unknown Album";
     QString m_albumArtUrl;
+    QVector<LyricLine> m_lyrics;
+    QString m_currentLyric;
+    QString m_previousLyric;
+    QString m_nextLyric;
+
+    void loadLyrics(const QString &trackName);
+    void updateCurrentLyric(qint64 position);
+    QStringList m_lyricList;
+    int m_currentLyricIndex = -1;
 };
 
 #endif
