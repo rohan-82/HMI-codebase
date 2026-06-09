@@ -43,12 +43,15 @@ qt_add_qml_module(EV_HMI
         qml/components/EnergyBar.qml
         qml/components/MetricTile.qml
         qml/components/ModeButton.qml
-        qml/components/Speedometer.qml
-        qml/components/DriveMode.qml
-        qml/components/PRND.qml
-        qml/components/DistancePanel.qml
-        qml/components/Battery.qml
-        qml/components/StatusCard.qml
+        qml/components/BatteryGraphic.qml  
+
+
+        qml/components/home-panels/DistancePanel.qml
+        qml/components/home-panels/SpeedometerPanel.qml
+        qml/components/home-panels/DriveModePanel.qml
+        qml/components/home-panels/VehicleStatusPanel.qml
+        qml/components/home-panels/SystemStatusPanel.qml
+        qml/components/home-panels/BatteryPanel.qml
 
         qml/pages/HomePage.qml
         qml/pages/MusicPage.qml
@@ -71,6 +74,22 @@ qt_add_resources(EV_HMI "assets"
         assets/icons/Dark/Universal/music-main.png
         assets/icons/Dark/Universal/diagnostics-main.png
         assets/icons/Dark/Universal/settings-main.png
+
+        #Home Page
+        assets/icons/Dark/HomePage/battery.png
+        assets/icons/Dark/HomePage/batterytemp.png
+        assets/icons/Dark/HomePage/caution-lights-off.png
+        assets/icons/Dark/HomePage/caution-lights-on.png
+        assets/icons/Dark/HomePage/handbrake-light-off.png
+        assets/icons/Dark/HomePage/handbrake-light-on.png
+        assets/icons/Dark/HomePage/high-beam.png
+        assets/icons/Dark/HomePage/low-beam.png
+        assets/icons/Dark/HomePage/left-indicator-off.png
+        assets/icons/Dark/HomePage/left-indicator-on.png
+        assets/icons/Dark/HomePage/range.png
+        assets/icons/Dark/HomePage/right-indicator-off.png
+        assets/icons/Dark/HomePage/right-indicator-on.png
+        assets/icons/Dark/HomePage/speedometer.png
 
         #Music Page
         assets/icons/Dark/MusicPage/play.png
@@ -110,6 +129,22 @@ qt_add_resources(EV_HMI "assets"
         assets/icons/Light/Universal/diagnostics-main.png
         assets/icons/Light/Universal/settings-main.png
 
+        #Home Page
+        assets/icons/Light/HomePage/battery.png
+        assets/icons/Light/HomePage/batterytemp.png
+        assets/icons/Light/HomePage/caution-lights-off.png
+        assets/icons/Light/HomePage/caution-lights-on.png
+        assets/icons/Light/HomePage/handbrake-light-off.png
+        assets/icons/Light/HomePage/handbrake-light-on.png
+        assets/icons/Light/HomePage/high-beam.png
+        assets/icons/Light/HomePage/low-beam.png
+        assets/icons/Light/HomePage/left-indicator-off.png
+        assets/icons/Light/HomePage/left-indicator-on.png
+        assets/icons/Light/HomePage/range.png
+        assets/icons/Light/HomePage/right-indicator-off.png
+        assets/icons/Light/HomePage/right-indicator-on.png
+        assets/icons/Light/HomePage/speedometer.png
+        
         #Music Page
         assets/icons/Light/MusicPage/play.png
         assets/icons/Light/MusicPage/pause.png
