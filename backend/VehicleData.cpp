@@ -8,6 +8,7 @@ VehicleData::VehicleData(QObject *parent)
       m_batteryPercent(100),
       m_motorTemp(35),
       m_batteryTemp(30),
+      m_controllerTemp(30),
       m_rangeKm(180),
       m_driveMode("ECO"),
       m_gearState("P"),
@@ -51,6 +52,11 @@ int VehicleData::motorTemp() const
 int VehicleData::batteryTemp() const
 {
     return m_batteryTemp;
+}
+
+int VehicleData::controllerTemp() const
+{
+    return m_controllerTemp;
 }
 
 int VehicleData::rangeKm() const
@@ -181,6 +187,16 @@ void VehicleData::setMotorTemp(int motorTemp)
 
     m_motorTemp = motorTemp;
     emit motorTempChanged();
+    emit telemetryChanged();
+}
+
+void VehicleData::setControllerTemp(int controllerTemp)
+{
+    if (m_controllerTemp == controllerTemp)
+        return;
+
+    m_controllerTemp = controllerTemp;
+    emit controllerTempChanged();
     emit telemetryChanged();
 }
 

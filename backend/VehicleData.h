@@ -21,6 +21,7 @@ class VehicleData : public QObject
 
     Q_PROPERTY(int motorTemp READ motorTemp WRITE setMotorTemp NOTIFY motorTempChanged)
     Q_PROPERTY(int batteryTemp READ batteryTemp WRITE setBatteryTemp NOTIFY batteryTempChanged)
+    Q_PROPERTY(int controllerTemp READ controllerTemp WRITE setControllerTemp NOTIFY controllerTempChanged)
 
     Q_PROPERTY(int rangeKm READ rangeKm WRITE setRangeKm NOTIFY rangeKmChanged)
 
@@ -60,6 +61,7 @@ public:
 
     int motorTemp() const;
     int batteryTemp() const;
+    int controllerTemp() const;
 
     int rangeKm() const;
 
@@ -113,7 +115,8 @@ public:
 
     void setMotorTemp(int motorTemp);
     void setBatteryTemp(int batteryTemp);
-
+    void setControllerTemp(int controllerTemp);
+    
     void setRangeKm(int rangeKm);
 
     void setDriveMode(const QString &driveMode);
@@ -174,6 +177,7 @@ signals:
 
     void motorTempChanged();
     void batteryTempChanged();
+    void controllerTempChanged();
 
     void rangeKmChanged();
 
@@ -213,7 +217,8 @@ private:
 
     int m_motorTemp;
     int m_batteryTemp;
-
+    int m_controllerTemp;
+    
     int m_rangeKm;
 
     QString m_driveMode;
