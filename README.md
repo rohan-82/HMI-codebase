@@ -15,6 +15,7 @@
 
 
 sudo apt update
+
 sudo apt upgrade -y
 
 
@@ -89,9 +90,11 @@ sudo apt install -y \
 
 
 mkdir build
+
 cd build
 
 cmake ..
+
 make
 
 ./EV_HMI
