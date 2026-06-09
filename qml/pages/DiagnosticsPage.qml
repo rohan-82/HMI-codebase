@@ -7,6 +7,55 @@ Item {
     id: diagnosticsCoreGrid
     anchors.fill: parent
 
+    property string batteryHealthStatus: {
+        if (vehicleData.communicationFault)
+            return "UNKNOWN"
+
+        if (vehicleData.batteryOverTempWarning)
+            return "FAULT"
+
+        if (vehicleData.lowBatteryWarning)
+            return "WARNING"
+
+        return "OK"
+    }
+
+    property string motorHealthStatus: {
+        if (vehicleData.communicationFault)
+            return "UNKNOWN"
+
+        return vehicleData.motorOverTempWarning
+               ? "FAULT"
+               : "OK"
+    }
+
+    property string controllerHealthStatus: {
+        return vehicleData.communicationFault
+            ? "UNKNOWN"
+            : "OK"
+    }
+
+    property string commsHealthStatus: {
+        return vehicleData.communicationFault
+               ? "FAULT"
+               : "OK"
+    }
+
+    property int healthScore: {
+        var score = 100
+
+        if (vehicleData.motorOverTempWarning)
+            score -= 20
+
+        if (vehicleData.batteryOverTempWarning)
+            score -= 20
+
+        if (vehicleData.communicationFault)
+            score -= 40
+
+        return Math.max(0, score)
+    }
+
     // =========================================================================
     // 🛠️ REUSABLE DASHBOARD CARD COMPONENT WITH SPEC RADII & PADDING
     // =========================================================================
@@ -51,10 +100,10 @@ Item {
         spacing: Theme.sectionGap // Standard gaps between primary UI modules
 
         // =====================================================================
-        // LEFT COLUMN MODULE AREA (34% Dynamic Width Allocation Space)
+        // LEFT COLUMN MODULE AREA (40% Dynamic Width Allocation Space)
         // =====================================================================
         ColumnLayout {
-            Layout.preferredWidth: parent.width * 0.34
+            Layout.preferredWidth: parent.width * 0.40
             Layout.preferredHeight: Math.round(440 * Theme.scale) // Aspect ratio locked
             Layout.fillHeight: true
             spacing: Theme.sectionGap
@@ -99,7 +148,7 @@ Item {
                                 anchors.centerIn: parent
                                 spacing: 1
                                 Text { text: "Motor"; font.family: Typography.family; font.pixelSize: Typography.label; color: Colors.textSecondary; Layout.alignment: Qt.AlignHCenter }
-                                Text { text: vehicleData.motorTemp + "°C"; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
+                                Text { text: vehicleData.communicationFault ? "--" : vehicleData.motorTemp + "°C"; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
                                 RowLayout { 
                                     spacing: 4; Layout.alignment: Qt.AlignHCenter
                                     Rectangle { width: 4; height: 4; radius: 2; color: Colors.accentEco } 
@@ -122,7 +171,7 @@ Item {
                                 anchors.centerIn: parent
                                 spacing: 1
                                 Text { text: "Battery Pack"; font.family: Typography.family; font.pixelSize: Typography.label; color: Colors.textSecondary; Layout.alignment: Qt.AlignHCenter }
-                                Text { text: vehicleData.batteryTemp + "°C"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
+                                Text { text: vehicleData.communicationFault ? "--" : vehicleData.batteryTemp + "°C"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
                                 RowLayout { 
                                     spacing: 4; Layout.alignment: Qt.AlignHCenter
                                     Rectangle { width: 4; height: 4; radius: 2; color: Colors.accentEco } 
@@ -143,7 +192,7 @@ Item {
                                 anchors.centerIn: parent
                                 spacing: 1
                                 Text { text: "Controller"; font.family: Typography.family; font.pixelSize: Typography.label; color: Colors.textSecondary; Layout.alignment: Qt.AlignHCenter }
-                                Text { text: "41°C"; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
+                                Text { text: vehicleData.communicationFault ? "--" : vehicleData.controllerTemp + "°C"; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.weight: Font.Bold; color: Colors.textPrimary; Layout.alignment: Qt.AlignHCenter }
                                 RowLayout { 
                                     spacing: 4; Layout.alignment: Qt.AlignHCenter
                                     Rectangle { width: 4; height: 4; radius: 2; color: Colors.accentEco } 
@@ -158,8 +207,8 @@ Item {
                         x: Math.round(10 * Theme.scale)
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
-                        Text { text: "72.4 V"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.accentCity }
-                        Text { text: "Pack Voltage"; font.family: Typography.family; font.pixelSize: 10; color: Colors.textMuted }
+                        Text { text: vehicleData.communicationFault ? "--" : "72.4 V"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.accentCity }
+                        Text { text: vehicleData.communicationFault ? "" : "Pack Voltage"; font.family: Typography.family; font.pixelSize: 10; color: Colors.textMuted }
                     }
 
                     Column {
@@ -167,8 +216,8 @@ Item {
                         anchors.rightMargin: Math.round(10 * Theme.scale)
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
-                        Text { text: "18.2 A"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.accentCity; horizontalAlignment: Text.AlignRight }
-                        Text { text: "Pack Current"; font.family: Typography.family; font.pixelSize: 10; color: Colors.textMuted; horizontalAlignment: Text.AlignRight }
+                        Text { text: vehicleData.communicationFault ? "--" : "18.2 A"; font.family: Typography.family; font.pixelSize: Typography.bodyLarge; font.weight: Font.Bold; color: Colors.accentCity; horizontalAlignment: Text.AlignRight }
+                        Text { text: vehicleData.communicationFault ? "" : "Pack Current"; font.family: Typography.family; font.pixelSize: 10; color: Colors.textMuted; horizontalAlignment: Text.AlignRight }
                     }
                 }
             }
@@ -187,8 +236,20 @@ Item {
                     component TemperatureMetricRow : RowLayout {
                         property string moduleName: ""
                         property string currentTemp: ""
-                        property real fillRatio: 0.5
-                        property color statusColor: Colors.accentCity
+                        property int temperature: 0
+                        property bool offline: false
+
+                        readonly property real fillRatio:
+                            offline ? 0.0 : Math.min(temperature / 80.0, 1.0)
+
+                        readonly property color statusColor:
+                            offline
+                                ? Colors.textMuted
+                                : temperature > 70
+                                    ? Colors.critical
+                                    : temperature >= 50
+                                        ? Colors.warning
+                                        : Colors.accentCity
 
                         Text { text: moduleName; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.weight: Font.Medium; color: Colors.textPrimary; Layout.preferredWidth: 85 }
                         
@@ -202,18 +263,49 @@ Item {
                                     Layout.fillWidth: true
                                     height: Math.round(10 * Theme.scale)
                                     radius: 1.5
-                                    color: (index / 12.0 < fillRatio) ? statusColor : Colors.surfaceSunken
-                                    opacity: (index / 12.0 < fillRatio) ? 1.0 : 0.35
+
+                                    color: (index / 12.0 < fillRatio)
+                                        ? statusColor
+                                        : Colors.surfaceSunken
+
+                                    opacity: (index / 12.0 < fillRatio)
+                                            ? 1.0
+                                            : 0.35
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 250
+                                        }
+                                    }
+
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: 250
+                                        }
+                                    }
                                 }
                             }
                         }
                         
-                        Text { text: currentTemp; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.weight: Font.Bold; color: Colors.textPrimary; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight }
+                        Text {
+                            text: vehicleData.communicationFault
+                                ? "--"
+                                : currentTemp
+
+                            font.family: Typography.family
+                            font.pixelSize: Typography.bodySmall
+                            font.weight: Font.Bold
+                            color: Colors.textPrimary
+
+                            Layout.preferredWidth: 45
+                            horizontalAlignment: Text.AlignRight
+                        }
                     }
 
-                    TemperatureMetricRow { moduleName: "Motor"; currentTemp: vehicleData.motorTemp + "°C"; fillRatio: 0.75; statusColor: Colors.accentCity }
-                    TemperatureMetricRow { moduleName: "Battery"; currentTemp: vehicleData.batteryTemp + "°C"; fillRatio: 0.45; statusColor: Colors.accentCity }
-                    TemperatureMetricRow { moduleName: "Controller"; currentTemp: "41°C"; fillRatio: 0.60; statusColor: Colors.warning } 
+                    TemperatureMetricRow { moduleName: "Motor"; temperature: vehicleData.motorTemp; currentTemp: vehicleData.communicationFault ? "--" : vehicleData.motorTemp + "°C" }
+                    TemperatureMetricRow { moduleName: "Battery"; temperature: vehicleData.batteryTemp; currentTemp: vehicleData.communicationFault ? "--" : vehicleData.batteryTemp + "°C" }
+                    TemperatureMetricRow { moduleName: "Controller"; temperature: vehicleData.controllerTemp; currentTemp: vehicleData.communicationFault ? "--" : vehicleData.controllerTemp + "°C" } 
+                    
 
                     Item { Layout.preferredHeight: 2 }
 
@@ -231,10 +323,10 @@ Item {
         }
 
         // =====================================================================
-        // RIGHT COLUMN MODULE AREA (63% Dynamic Width Allocation Space)
+        // RIGHT COLUMN MODULE AREA (60% Dynamic Width Allocation Space)
         // =====================================================================
         ColumnLayout {
-            Layout.preferredWidth: parent.width * 0.63
+            Layout.preferredWidth: parent.width * 0.60
             Layout.fillHeight: true
             spacing: Theme.sectionGap
 
@@ -261,15 +353,37 @@ Item {
                             
                             component DiagnosticLineItem : RowLayout {
                                 property string itemLabel: ""
+                                property string itemStatus: "OK"
                                 Text { text: itemLabel; font.family: Typography.family; font.pixelSize: Typography.bodySmall; color: Colors.textSecondary }
                                 Item { Layout.fillWidth: true }
-                                Text { text: "OK"; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.weight: Font.Bold; color: Colors.accentEco }
+                                Text {
+                                    text: itemStatus
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodySmall
+                                    font.weight: Font.Bold
+                                    color: itemStatus === "FAULT" ? Colors.critical : itemStatus === "WARNING" ? Colors.warning : itemStatus === "UNKNOWN" ? Colors.textMuted : Colors.accentEco
+                                }
                             }
                             
-                            DiagnosticLineItem { itemLabel: "Battery" }
-                            DiagnosticLineItem { itemLabel: "Motor" }
-                            DiagnosticLineItem { itemLabel: "Controller" }
-                            DiagnosticLineItem { itemLabel: "Comms" }
+                            DiagnosticLineItem {
+                                itemLabel: "Battery"
+                                itemStatus: batteryHealthStatus
+                            }
+
+                            DiagnosticLineItem {
+                                itemLabel: "Motor"
+                                itemStatus: motorHealthStatus
+                            }
+
+                            DiagnosticLineItem {
+                                itemLabel: "Controller"
+                                itemStatus: controllerHealthStatus
+                            }
+
+                            DiagnosticLineItem {
+                                itemLabel: "Comms"
+                                itemStatus: commsHealthStatus
+                            }
                             
                             Text { text: "Last Check: 12:42:31"; font.family: Typography.family; font.pixelSize: Typography.label; color: Colors.textMuted; Layout.topMargin: 4 }
                         }
@@ -277,9 +391,39 @@ Item {
                         ColumnLayout {
                             Layout.preferredWidth: Math.round(95 * Theme.scale)
                             spacing: 2
-                            Layout.alignment: Qt.AlignVCenter // ✅ Attached property layout resolution
-                            Text { text: "98%"; font.family: Typography.family; font.pixelSize: Typography.titleMedium; font.weight: Font.Bold; color: Colors.accentCity; Layout.alignment: Qt.AlignHCenter }
-                            Text { text: "HEALTHY"; font.family: Typography.family; font.pixelSize: Typography.label; font.weight: Font.Bold; color: Colors.accentCity; Layout.alignment: Qt.AlignHCenter }
+                            Layout.alignment: Qt.AlignVCenter
+
+                            Text {
+                                text: vehicleData.communicationFault
+                                    ? "OFFLINE"
+                                    : healthScore + "%"
+
+                                font.family: Typography.family
+                                font.pixelSize: Typography.titleMedium
+                                font.weight: Font.Bold
+                                color: vehicleData.communicationFault
+                                    ? Colors.critical
+                                    : Colors.accentCity
+
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            Text {
+                                text: vehicleData.communicationFault
+                                    ? "DATA UNAVAILABLE"
+                                    : (healthScore >= 80 ? "HEALTHY"
+                                                        : healthScore >= 60 ? "DEGRADED"
+                                                                            : "CRITICAL")
+
+                                font.family: Typography.family
+                                font.pixelSize: Typography.label
+                                font.weight: Font.Bold
+                                color: vehicleData.communicationFault
+                                    ? Colors.critical
+                                    : Colors.accentCity
+
+                                Layout.alignment: Qt.AlignHCenter
+                            }
                         }
                     }
                 }
@@ -288,6 +432,7 @@ Item {
                 DashboardCard {
                     id: activeWarningsCard
                     property int activeWarnings:
+                        (vehicleData.communicationFault ? 1 : 0) +
                         (vehicleData.lowBatteryWarning ? 1 : 0) +
                         (vehicleData.lowRangeWarning ? 1 : 0) +
                         (vehicleData.motorOverTempWarning ? 1 : 0) +
@@ -314,13 +459,13 @@ Item {
                                 height: 36
                                 radius: 18
                                 color: "transparent"
-                                border.color: vehicleData.hasWarning ? Colors.warning : Colors.accentCity
+                                border.color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentCity
                                 border.width: 2
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: vehicleData.hasWarning ? "!" : "✓"
-                                    color: vehicleData.hasWarning ? Colors.warning : Colors.accentCity
+                                    text: vehicleData.communicationFault ? "X" : vehicleData.hasWarning ? "!" : "✓"
+                                    color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentCity
                                     font.pixelSize: 20
                                     font.bold: true
                                 }
@@ -328,8 +473,8 @@ Item {
 
                             Text {
                                 Layout.alignment: Qt.AlignHCenter
-                                text: vehicleData.hasWarning ? "ACTIVE WARNINGS" : "NO ACTIVE WARNINGS"
-                                color: vehicleData.hasWarning ? Colors.warning : Colors.accentCity
+                                text: vehicleData.communicationFault ? "COMMUNICATION FAULT" : vehicleData.hasWarning ? "ACTIVE WARNINGS" : "NO ACTIVE WARNINGS"
+                                color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentCity
                                 font.family: Typography.family
                                 font.pixelSize: Typography.bodyMedium
                                 font.bold: true
@@ -338,7 +483,7 @@ Item {
 
                             Text {
                                 Layout.alignment: Qt.AlignHCenter
-                                text: vehicleData.hasWarning ? "One or more vehicle alerts require attention." : "All systems are functioning normally."
+                                text: vehicleData.communicationFault ? "Telemetry connection lost. Diagnostic data unavailable." : vehicleData.hasWarning ? "One or more vehicle alerts require attention." : "All systems are functioning normally."
                                 color: Colors.textSecondary
                                 font.family: Typography.family
                                 font.pixelSize: Typography.bodySmall
@@ -360,7 +505,7 @@ Item {
                             spacing: 8
 
                             Text {
-                                text: vehicleData.hasWarning
+                                text: activeWarningsCard.activeWarnings > 0
                                     ? "Current Fault"
                                     : "Last Fault (Historical)"
 
@@ -387,9 +532,9 @@ Item {
 
                                     // Warning Sign Icon
                                     Text { 
-                                        text: vehicleData.hasWarning ? "⚠" : "✓"
+                                        text: vehicleData.communicationFault ? "X" : vehicleData.hasWarning ? "⚠" : "✓"
                                         font.pixelSize: 20
-                                        color: vehicleData.hasWarning ? Colors.warning : Colors.accentEco
+                                        color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentEco
                                         Layout.alignment: Qt.AlignVCenter
                                     }
 
@@ -400,9 +545,7 @@ Item {
                                         Layout.alignment: Qt.AlignVCenter
 
                                         Text {
-                                            text: vehicleData.hasWarning
-                                                ? vehicleData.warningMessage
-                                                : "No active faults"
+                                            text: vehicleData.communicationFault ? "Communication Fault" : vehicleData.hasWarning ? vehicleData.warningMessage : "No active faults"
 
                                             font.family: Typography.family
                                             font.pixelSize: Typography.bodySmall
@@ -419,11 +562,11 @@ Item {
 
                                     // Resolution Status Badge
                                     Text { 
-                                        text: vehicleData.hasWarning ? "Active" : "Resolved"
+                                        text: vehicleData.communicationFault ? "Critical" : vehicleData.hasWarning ? "Active" : "Resolved"
                                         font.family: Typography.family
                                         font.pixelSize: Typography.bodySmall
                                         font.weight: Font.Medium
-                                        color: vehicleData.hasWarning ? Colors.warning : Colors.accentEco
+                                        color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentEco
                                         Layout.alignment: Qt.AlignVCenter
                                     }
                                 }
@@ -437,13 +580,11 @@ Item {
                             spacing: 12
                             
                             Text {
-                                text: activeWarningsCard.activeWarnings + " Active"
+                                text: vehicleData.communicationFault ? activeWarningsCard.activeWarnings + " Critical" : vehicleData.hasWarning ? activeWarningsCard.activeWarnings + " Active" : "Resolved"
                                 font.family: Typography.family
                                 font.pixelSize: Typography.label
                                 font.weight: Font.DemiBold
-                                color: activeWarningsCard.activeWarnings > 0
-                                    ? Colors.warning
-                                    : Colors.accentCity
+                                color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentEco
                             }
 
                             Rectangle {
@@ -454,11 +595,11 @@ Item {
                             }
 
                             Text { 
-                                text: vehicleData.historicalWarnings + " Historical" 
+                                text: vehicleData.communicationFault ? "Connection Lost" : vehicleData.historicalWarnings + " Historical" 
                                 font.family: Typography.family
                                 font.pixelSize: Typography.label
                                 font.weight: Font.DemiBold
-                                color: Colors.accentCity 
+                                color: vehicleData.communicationFault ? Colors.critical : vehicleData.hasWarning ? Colors.warning : Colors.accentCity 
                             }
                         }
                     }
@@ -501,7 +642,7 @@ Item {
 
                         ColumnLayout {
                             anchors.fill: parent
-                            spacing: 5
+                            spacing: 4
 
                             RowLayout {
                                 spacing: 2
@@ -513,7 +654,7 @@ Item {
                                     height: 26
                                     BatteryGraphic {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        percentage: vehicleData.batteryPercent
+                                        percentage: vehicleData.communicationFault ? 0 : vehicleData.batteryPercent
                                     }
                                 }
 
@@ -550,7 +691,7 @@ Item {
                                 Item { Layout.fillWidth: true }
 
                                 Text {
-                                    text: vehicleData.rangeKm + " km"
+                                    text: vehicleData.communicationFault ? "--" : vehicleData.rangeKm + " km"
                                     color: Colors.textPrimary
                                     font.pixelSize: Typography.bodySmall
                                 }
@@ -568,7 +709,7 @@ Item {
                                 Item { Layout.fillWidth: true }
 
                                 Text {
-                                    text: "96%"
+                                    text: vehicleData.communicationFault ? "--" : "96%"
                                     color: Colors.textPrimary
                                     font.pixelSize: Typography.bodySmall
                                 }
@@ -587,12 +728,12 @@ Item {
                                     width: 6
                                     height: 6
                                     radius: 3
-                                    color: vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? Colors.warning  : Colors.accentEco
+                                    color: vehicleData.communicationFault ? Colors.textMuted : vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? Colors.warning : Colors.accentEco
                                 }
 
                                 Text {
-                                    text: vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? "Low Battery" : statusText
-                                    color: vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? Colors.warning : Colors.accentCity
+                                    text: vehicleData.communicationFault ? "DATA UNAVAILABLE" : vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? "Low Battery" : statusText
+                                    color: vehicleData.communicationFault ? Colors.textMuted : vehicleData.batteryOverTempWarning || vehicleData.lowBatteryWarning ? Colors.warning : Colors.accentCity
                                     font.family: Typography.family
                                     font.bold: true
                                     font.pixelSize: Typography.label
@@ -621,6 +762,8 @@ Item {
                                     color: Colors.accentCity
                                     Layout.alignment: Qt.AlignVCenter
                                 }
+
+                                Item { Layout.fillWidth: true }
 
                                 // Value, Unit, and Subtitle Column
                                 ColumnLayout {
@@ -671,12 +814,12 @@ Item {
                                     width: 6
                                     height: 6
                                     radius: 3
-                                    color: accentEco // Fixed: Using statusColor to match the green text indicator
+                                    color: vehicleData.communicationFault ? Colors.textMuted : accentEco
                                 }
 
                                 Text {
-                                    text: statusText
-                                    color: statusColor
+                                    text: vehicleData.communicationFault ? "DATA UNAVAILABLE" : statusText
+                                    color: vehicleData.communicationFault ? Colors.textMuted : statusColor
                                     font.family: Typography.family
                                     font.bold: true
                                     font.pixelSize: Typography.label
@@ -690,16 +833,16 @@ Item {
                     title: "Battery"
                     isBattery: true
 
-                    mainValue: vehicleData.batteryPercent
-                    mainLabel: "%"
+                    mainValue: vehicleData.communicationFault ? "--" : vehicleData.batteryPercent
+                    mainLabel: vehicleData.communicationFault ? "" : "%"
 
                 }
                 QuadMiniBadge {
                     title: "Powertrain"
                     symbolChar: "⚡"
 
-                    mainValue: vehicleData.motorPower.toFixed(1)
-                    mainLabel: " kW"
+                    mainValue: vehicleData.communicationFault ? "--" : vehicleData.motorPower.toFixed(1)
+                    mainLabel: vehicleData.communicationFault ? "" : " kW"
 
                     subLabel: "Motor Power"
                 }
@@ -707,8 +850,8 @@ Item {
                     title: "Thermal"
                     symbolChar: "🌡"
 
-                    mainValue: vehicleData.motorTemp
-                    mainLabel: "°C"
+                    mainValue: vehicleData.communicationFault ? "--" : vehicleData.motorTemp
+                    mainLabel: vehicleData.communicationFault ? "" : "°C"
 
                     subLabel: "Max Temp"
                 }
@@ -716,10 +859,10 @@ Item {
                     title: "Communication"
                     symbolChar: "📡"
 
-                    mainLabel: "CONNECTED"
+                    mainLabel: vehicleData.communicationFault ? "OFFLINE" : "CONNECTED"
                     subLabel: ""
 
-                    statusText: "STABLE"
+                    statusText: vehicleData.communicationFault ? "TELEMETRY LOST" : "STABLE"
                 }
             }
 
