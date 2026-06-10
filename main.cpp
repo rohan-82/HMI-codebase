@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QUrl>
 
 #include "backend/VehicleData.h"
 #include "backend/TelemetrySimulator.h"
@@ -135,6 +136,11 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "spotifyApi",
         &spotifyApi);
+
+    engine.rootContext()->setContextProperty(
+        "telemetryLogger",
+        &telemetryLogger
+    );
     
     #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
         engine.loadFromModule("EvHmi", "Main");
