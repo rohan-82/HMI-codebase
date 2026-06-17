@@ -7,6 +7,7 @@ Item {
     property int activeTab: 0
     property int mediaSourceTab: 0 // 0 = Local, 1 = Spotify
     property string localSearchQuery: ""
+    property bool showBluetoothPopup: false
 
     // Virtual Keyboard Target Configuration State Variables
     property bool showKeyboard: false
@@ -46,7 +47,11 @@ Item {
         "spotify":          { "en": "Spotify",          "de": "Spotify",                "es": "Spotify" },
         "lyrics":           { "en": "Lyrics",           "de": "Liedtext",               "es": "Lírica" },
         "media_hub":        { "en": "Media Hub",        "de": "Medien-Hub",             "es": "Centro de Medios" },
+<<<<<<< HEAD
+        "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "dispositivo Bluetooth" },
+=======
         "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "Dispositivo Bluetooth" },
+>>>>>>> c12379d7b69628b5a10bfe289626c6755f2a89ec
         "switch":           { "en": "Switch",           "de": "Wechseln",               "es": "Cambiar" },
         "track":            { "en": "Track",            "de": "Titel",                  "es": "Pista" },
         "status":           { "en": "Status",           "de": "Status",                 "es": "Estado" },
@@ -513,8 +518,93 @@ Item {
                             width: parent.width - 52 - 90 
                             spacing: 2
 
-                            Text { text: musicPageRoot.translations["source_device"][Typography.currentLanguage]; color: Colors.textMuted; font.family: Typography.family; font.pixelSize: Typography.bodySmall }
-                            Text { text: "Pixel 8 Pro"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.bold: true; elide: Text.ElideRight; width: parent.width }
+                            Text { text: musicPageRoot.translations["source_device"][Typography.currentLanguage]; color: Colors.textSecondary; font.family: Typography.family; font.pixelSize: Typography.bodySmall }
+                            Text { text: bluetoothManager.activeAudioDevice !== "" ? bluetoothManager.activeAudioDevice : "No Device"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium; font.bold: true; elide: Text.ElideRight; width: parent.width }
+                            Column {
+                                spacing: 2
+
+                                Row {
+                                    spacing: 6
+
+                                    Rectangle {
+                                        width: 6
+                                        height: 6
+                                        radius: 3
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        color: bluetoothManager.connected
+                                            ? Colors.accentEco
+                                            : Colors.warning
+                                    }
+
+                                    Text {
+                                        text: bluetoothManager.connected
+                                            ? "Connected"
+                                            : "Disconnected"
+
+                                        color: bluetoothManager.connected
+                                            ? Colors.accentEco
+                                            : Colors.warning
+
+                                        font.family: Typography.family
+                                        font.pixelSize: Typography.bodySmall
+                                    }
+                                }
+
+                                Text {
+                                    visible:
+                                        bluetoothManager.deviceName === bluetoothManager.activeAudioDevice
+
+                                    text: "🔊 Active Audio"
+
+                                    color: Colors.accentCity
+
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodySmall
+                                }
+                            }
+
+                            Row {
+                                spacing: 6
+
+                                Text {
+                                    text: "Battery"
+                                    color: Colors.textSecondary
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodySmall
+                                }
+
+                                Rectangle {
+                                    width: 60
+                                    height: 4
+                                    radius: 2
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    color: Colors.surfaceRaised
+
+                                    Rectangle {
+                                        width: parent.width * (bluetoothManager.battery / 100.0)
+                                        height: parent.height
+                                        radius: 2
+
+                                        color: bluetoothManager.battery > 60
+                                            ? Colors.accentCity
+                                            : bluetoothManager.battery > 20 
+                                            ? Colors.warning
+                                            : Colors.critical
+                                    }
+                                }
+
+                                Text {
+                                    text: bluetoothManager.battery >= 0
+                                        ? bluetoothManager.battery + "%"
+                                        : "--"
+
+                                    color: Colors.textSecondary
+                                    font.family: Typography.family
+                                    font.pixelSize: Typography.bodySmall
+                                }
+                            }
                         }
 
                         Rectangle {
@@ -523,7 +613,7 @@ Item {
                             color: swapMouse.pressed ? Colors.surfacePressed : Colors.surfaceRaised
                             border.width: 1; border.color: Colors.borderWarm
                             Text { anchors.centerIn: parent; text: musicPageRoot.translations["switch"][Typography.currentLanguage]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.bold: true }
-                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: console.log("Device profile change overlay requested") }
+                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: { bluetoothManager.scanDevices(); musicPageRoot.showBluetoothPopup = true } }
                         }
                     }
                 }
@@ -1063,6 +1153,146 @@ Item {
                     id: keyMouse
                     anchors.fill: parent
                     onClicked: musicPageRoot.handleKeyboardInput(modelData)
+                }
+            }
+        }
+    }
+    Rectangle {
+        visible: musicPageRoot.showBluetoothPopup
+
+        anchors.fill: parent
+
+        color: "#99000000"
+
+        z: 200
+
+        MouseArea {
+            anchors.fill: parent
+
+            onClicked:
+                musicPageRoot.showBluetoothPopup = false
+        }
+    }
+    BaseCard {
+        visible: musicPageRoot.showBluetoothPopup
+
+        z: 201
+
+        width: 500
+        height: 400
+
+        anchors.centerIn: parent
+
+        title: "Bluetooth Devices"
+
+        Item {
+            anchors.fill: parent
+            anchors.margins: 12
+
+            ListView {
+                anchors.fill: parent
+
+                model: bluetoothManager.availableDeviceNames
+
+                delegate: Rectangle {
+                    width: ListView.view.width
+                    height: 72
+
+                    radius: 10
+
+                    color: Colors.surfaceRaised
+
+                    border.width: 1
+                    border.color: Colors.borderWarm
+
+                    Rectangle {
+                        width: 40
+                        height: 40
+                        radius: 20
+
+                        anchors.left: parent.left
+                        anchors.leftMargin: 14
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        color: Colors.surfacePressed
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "🎧"
+                        }
+                    }
+
+                    Column {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 65
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        spacing: 4
+
+                        Text {
+                            text: modelData
+                            color: Colors.textPrimary
+                            font.pixelSize: 16
+                            font.family: Typography.family
+                            font.bold: true
+                        }
+
+                        Text {
+                            text:
+                                modelData === bluetoothManager.activeAudioDevice
+                                    ? "Connected • Active Audio"
+                                    : bluetoothManager.connectedDeviceNames.includes(modelData)
+                                        ? "Connected"
+                                        : "Available"
+
+                            color:
+                                modelData === bluetoothManager.activeAudioDevice
+                                    ? Colors.accentEco
+                                    : bluetoothManager.connectedDeviceNames.includes(modelData)
+                                        ? Colors.accentCity
+                                        : Colors.textSecondary
+
+                            font.pixelSize: 12
+                            font.family: Typography.family
+                        }
+                    }
+
+                    Rectangle {
+                        visible: modelData === bluetoothManager.deviceName
+
+                        width: 80
+                        height: 24
+
+                        radius: 12
+
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        color: Colors.accentEco
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Connected"
+                            font.pixelSize: 11
+                            color: "white"
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            if(modelData === bluetoothManager.deviceName)
+                            {
+                                bluetoothManager.disconnectDevice(index)
+                            }
+                            else
+                            {
+                                bluetoothManager.connectDevice(index)
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -20,6 +20,7 @@ qt_add_executable(EV_HMI
     backend/SerialManager.cpp
     backend/TelemetryLogger.cpp
     backend/SpotifyAPIManager.cpp
+    backend/BluetoothManager.cpp
 )
 
 target_include_directories(EV_HMI PRIVATE
