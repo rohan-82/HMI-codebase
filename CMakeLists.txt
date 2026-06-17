@@ -75,6 +75,10 @@ qt_add_resources(EV_HMI "assets"
     PREFIX "/"
 
     FILES
+
+    #Boot
+        assets/Boot/Splash-screen.mp4
+    #Music
         assets/music/placeholder/default_cover.png
     #Dark Theme
         #Universal
