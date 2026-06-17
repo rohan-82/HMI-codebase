@@ -45,9 +45,13 @@ Item {
     readonly property var translations: {
         "local":            { "en": "Local",            "de": "Lokal",                  "es": "Local" },
         "spotify":          { "en": "Spotify",          "de": "Spotify",                "es": "Spotify" },
-        "lyrics":           { "en": "Lyrics",           "de": "Songtext",               "es": "Letras" },
+        "lyrics":           { "en": "Lyrics",           "de": "Liedtext",               "es": "Lírica" },
         "media_hub":        { "en": "Media Hub",        "de": "Medien-Hub",             "es": "Centro de Medios" },
+<<<<<<< HEAD
         "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "dispositivo Bluetooth" },
+=======
+        "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "Dispositivo Bluetooth" },
+>>>>>>> c12379d7b69628b5a10bfe289626c6755f2a89ec
         "switch":           { "en": "Switch",           "de": "Wechseln",               "es": "Cambiar" },
         "track":            { "en": "Track",            "de": "Titel",                  "es": "Pista" },
         "status":           { "en": "Status",           "de": "Status",                 "es": "Estado" },
@@ -56,11 +60,11 @@ Item {
         "volume":           { "en": "Volume",           "de": "Lautstärke",             "es": "Volumen" },
         "mute":             { "en": "Mute",             "de": "Stumm",                  "es": "Silenciar" },
         "unmute":           { "en": "Unmute",           "de": "Ton an",                 "es": "No silenciar" },
-        "shuffle":          { "en": "Shuffle",          "de": "Zufall",                 "es": "Aleatorio" },
+        "shuffle":          { "en": "Shuffle",          "de": "Zufall",                 "es": "Barajar" },
         "repeat":           { "en": "Repeat",           "de": "Wiederholen",            "es": "Repetir" },
         "search_local":     { "en": "Search Local Storage...", "de": "Lokalen Speicher durchsuchen...", "es": "Buscar en almacenamiento local..." },
         "search_spotify":   { "en": "Search Spotify...",       "de": "Spotify durchsuchen...",          "es": "Buscar en Spotify..." },
-        "spotify_fallback": { "en": "No matches. Search Spotify instead?", "de": "Keine Treffer. Stattdessen Spotify durchsuchen?", "es": "Sin coincidencias. ¿Buscar en Spotify?" },
+        "spotify_fallback": { "en": "No matches. Search Spotify instead?", "de": "Keine Treffer. Stattdessen Spotify durchsuchen?", "es": "Sin coincidencias. ¿Quieres buscar en Spotify?" },
         "queue_title":      { "en": "Playback Queue",   "de": "Wiedergabewarteschlange", "es": "Cola de Reproducción" }
     }
 
