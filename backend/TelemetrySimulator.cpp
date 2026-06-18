@@ -1,5 +1,6 @@
 #include "TelemetrySimulator.h"
 #include "VehicleData.h"
+#include <QRandomGenerator>
 
 TelemetrySimulator::TelemetrySimulator(VehicleData *vehicleData, QObject *parent) 
     : QObject(parent), m_vehicleData(vehicleData)
@@ -9,28 +10,50 @@ TelemetrySimulator::TelemetrySimulator(VehicleData *vehicleData, QObject *parent
 
 void TelemetrySimulator::start()
 {
-    m_timer.start(100);
+    m_timer.start(100); // 10 Hz update loop
 }
 
 void TelemetrySimulator::generateFakeData()
 {
     // =========================================================================
-    // 1. INTERACTIVE TOGGLE: SIMULATION ACTIVE Check
+    // 1. ENGINE TOGGLE: SIMULATION ACTIVE CHECK
     // =========================================================================
-    // If the engineer toggles the engine OFF in QML, freeze all data calculations.
-    // Note: Change to 'isSimulationActive()' if your C++ getter uses the 'is' prefix.
-    if (!m_vehicleData->simulationActive())
+    // Sync internal state with the QML toggle
+    m_state.simulationActive = m_vehicleData->simulationActive();
+
+    if (!m_state.simulationActive)
     {
+        // If stopped, we bypass data generation calculations entirely.
+        // This causes the dashboard UI values to freeze at their last state.
         return; 
     }
 
     // =========================================================================
-    // 2. INTERACTIVE TOGGLE: COMMUNICATION FAULT Check
+    // 2. FAULT TOGGLE: COMMUNICATION FAULT CHECK
     // =========================================================================
-    // Read directly from the property modified by your QML MouseArea toggle switch.
     m_state.communicationFault = m_vehicleData->communicationFault();
 
-    // Calculate simulated dynamic changes
+    if (m_state.communicationFault)
+    {
+        // SIMULATE BUS CORRUPTION: Inject missing/garbage telemetry frames
+        // In a real EV, a CAN-bus failure results in frozen, out-of-bounds, or missing data.
+        
+        // Randomly spike power and RPM to simulate bus noise
+        float corruptedPower = QRandomGenerator::global()->bounded(-50, 150);
+        int corruptedRpm = QRandomGenerator::global()->bounded(0, 8000);
+
+        m_vehicleData->setMotorPower(corruptedPower);
+        m_vehicleData->setRpm(corruptedRpm);
+        m_vehicleData->setWarningMessage("CAN BUS COMMS FAULT: CRC ERROR");
+        m_vehicleData->setHasWarning(true);
+        
+        // We skip updating the rest of the variables to let them freeze/stale out
+        return; 
+    }
+
+    // =========================================================================
+    // 3. NOMINAL OPERATION CALCULATIONS (Runs only if Active & No Fault)
+    // =========================================================================
     if (m_state.accelerating)
     {
         m_state.speed += 1;
@@ -44,10 +67,8 @@ void TelemetrySimulator::generateFakeData()
             m_state.accelerating = true;
     }
 
-    // Simulate RPM based on speed
     m_state.rpm = m_state.speed * 50;
     
-    // Simulate battery drain and range reduction every 15 seconds
     if (m_state.speed > 0)
     {
         static int batteryCounter = 0;
@@ -63,35 +84,22 @@ void TelemetrySimulator::generateFakeData()
         }
     }
 
-    // Simulate temperature changes based on speed
+    // Dynamic temps, power, gear states
     m_state.motorTemp = 35 + (m_state.speed / 4);
     m_state.batteryTemp = 50 + (m_state.speed / 8);
     m_state.controllerTemp = 30 + (m_state.speed / 6);
-
-    // Simulate motor power based on speed
     m_state.motorPower = m_state.speed * 0.8f;
+    m_state.gearState = (m_state.speed == 0) ? "P" : "D";
 
-    // Simulate gear state based on speed
-    if (m_state.speed == 0)
-        m_state.gearState = "P";
-    else
-        m_state.gearState = "D";
+    if (m_state.speed < 40) m_state.driveMode = "ECO";
+    else if (m_state.speed < 80) m_state.driveMode = "CITY";
+    else m_state.driveMode = "SPORT";
 
-    // Simulate drive mode changes based on speed
-    if (m_state.speed < 40)
-        m_state.driveMode = "ECO";
-    else if (m_state.speed < 80)
-        m_state.driveMode = "CITY";
-    else
-        m_state.driveMode = "SPORT";
-
-    // Simulate odometer and trip distance
+    // Odometer increments
     m_state.odometer += m_state.speed / 36000.0f;
     m_state.tripDistance += m_state.speed / 36000.0f;
-    m_state.tripA += m_state.speed / 36000.0f;
-    m_state.tripB += m_state.speed / 36000.0f;
 
-    // Simulate indicator behavior
+    // Indicators
     static int indicatorCounter = 0;
     indicatorCounter++;
     if (indicatorCounter >= 50)
@@ -100,14 +108,16 @@ void TelemetrySimulator::generateFakeData()
         m_state.leftIndicator = !m_state.leftIndicator;
     }
 
-    // Simulate headlights turning on at higher speeds
     m_state.headlights = (m_state.speed > 60);
+    m_state.regenLevel = m_state.speed > 60 ? 3 : m_state.speed > 30 ? 2 : 1;
 
-    // Simulate regenerative braking levels based on speed
-    m_state.regenLevel = m_state.speed > 60 ? 3 :
-                         m_state.speed > 30 ? 2 : 1;
+    // Clear warnings if we are nominal
+    m_vehicleData->setWarningMessage("");
+    m_vehicleData->setHasWarning(false);
 
-    // Pushing states to your concrete VehicleData instance
+    // =========================================================================
+    // 4. PUSH STATE TO QML INTERFACE
+    // =========================================================================
     m_vehicleData->setSpeed(m_state.speed);
     m_vehicleData->setRpm(m_state.rpm);
     m_vehicleData->setBatteryPercent(m_state.batteryPercent);
@@ -124,9 +134,4 @@ void TelemetrySimulator::generateFakeData()
     m_vehicleData->setRegenLevel(m_state.regenLevel);
     m_vehicleData->setOdometer(m_state.odometer);
     m_vehicleData->setTripDistance(m_state.tripDistance);
-    m_vehicleData->settripA(m_state.tripA);
-    m_vehicleData->settripB(m_state.tripB);
-
-    // Maintain the forced layout state injected from QML
-    m_vehicleData->setCommunicationFault(m_state.communicationFault);
 }
