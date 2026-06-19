@@ -162,7 +162,7 @@ Item {
             : vehicleData.batteryOverTempWarning || vehicleData.motorOverTempWarning
             ? Colors.critical
             : vehicleData.lowBatteryWarning || vehicleData.lowRangeWarning ? Colors.warning : Colors.borderSubtle
-        border.width: 1
+        border.width: 2
 
         Row {
             anchors.fill: parent
