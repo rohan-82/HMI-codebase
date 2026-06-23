@@ -47,7 +47,11 @@ Item {
         "spotify":          { "en": "Spotify",          "de": "Spotify",                "es": "Spotify" },
         "lyrics":           { "en": "Lyrics",           "de": "Liedtext",               "es": "Lírica" },
         "media_hub":        { "en": "Media Hub",        "de": "Medien-Hub",             "es": "Centro de Medios" },
+<<<<<<< HEAD
         "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "dispositivo Bluetooth" },
+=======
+        "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "Dispositivo Bluetooth" },
+>>>>>>> a184f8f90aa8c79b049db4eb371a631cd8266f59
         "switch":           { "en": "Switch",           "de": "Wechseln",               "es": "Cambiar" },
         "track":            { "en": "Track",            "de": "Titel",                  "es": "Pista" },
         "status":           { "en": "Status",           "de": "Status",                 "es": "Estado" },
