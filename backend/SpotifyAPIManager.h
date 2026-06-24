@@ -8,6 +8,8 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QVector>
+#include <QtNetworkAuth/qoauth2authorizationcodeflow.h>
+#include <QtNetworkAuth/qoauthhttpserverreplyhandler.h>
 
 struct SpotifyTrack
 {
@@ -51,6 +53,7 @@ public:
     // Type-safe structural interfaces matching front-end layouts
     Q_INVOKABLE void addToQueue(int index);
     Q_INVOKABLE void playQueueTrack(int index);
+    Q_INVOKABLE void login();
 
     QStringList trackTitles() const;
     QVariantList tracks() const;
@@ -92,6 +95,9 @@ private:
     // Core vector structures containing the playlist queues
     QList<SpotifyTrack> m_queue;
     int m_currentTrackIndex = -1;
+
+    QOAuth2AuthorizationCodeFlow m_oauth;
+    QOAuthHttpServerReplyHandler *m_replyHandler = nullptr;
 };
 
 #endif // SPOTIFYAPIMANAGER_H

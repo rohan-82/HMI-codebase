@@ -42,16 +42,12 @@ Item {
     // =====================================================
     // HARDCODED TRANSLATION DICTIONARY
     // =====================================================
-    readonly property var translations: ({
+    readonly property var translations: {
         "local":            { "en": "Local",            "de": "Lokal",                  "es": "Local" },
         "spotify":          { "en": "Spotify",          "de": "Spotify",                "es": "Spotify" },
         "lyrics":           { "en": "Lyrics",           "de": "Liedtext",               "es": "Lírica" },
         "media_hub":        { "en": "Media Hub",        "de": "Medien-Hub",             "es": "Centro de Medios" },
-<<<<<<< HEAD
-        "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "dispositivo Bluetooth" },
-=======
         "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "Dispositivo Bluetooth" },
->>>>>>> a184f8f90aa8c79b049db4eb371a631cd8266f59
         "switch":           { "en": "Switch",           "de": "Wechseln",               "es": "Cambiar" },
         "track":            { "en": "Track",            "de": "Titel",                  "es": "Pista" },
         "status":           { "en": "Status",           "de": "Status",                 "es": "Estado" },
@@ -66,7 +62,7 @@ Item {
         "search_spotify":   { "en": "Search Spotify...",       "de": "Spotify durchsuchen...",          "es": "Buscar en Spotify..." },
         "spotify_fallback": { "en": "No matches. Search Spotify instead?", "de": "Keine Treffer. Stattdessen Spotify durchsuchen?", "es": "Sin coincidencias. ¿Quieres buscar en Spotify?" },
         "queue_title":      { "en": "Playback Queue",   "de": "Wiedergabewarteschlange", "es": "Cola de Reproducción" }
-    })
+    }
 
     Row {
         anchors.fill: parent
@@ -613,7 +609,7 @@ Item {
                             color: swapMouse.pressed ? Colors.surfacePressed : Colors.surfaceRaised
                             border.width: 1; border.color: Colors.borderWarm
                             Text { anchors.centerIn: parent; text: musicPageRoot.translations["switch"][Typography.currentLanguage]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.bold: true }
-                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: { bluetoothManager.scanDevices(); musicPageRoot.showBluetoothPopup = true } }
+                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: { spotifyApi.login() } }
                         }
                     }
                 }

@@ -9,10 +9,128 @@
 #include <QUrl>
 #include <QDebug>
 #include <QUrlQuery>
+#include <QDesktopServices>
+#include <QtNetworkAuth/qoauth2authorizationcodeflow.h>
+#include <QtNetworkAuth/qoauthhttpserverreplyhandler.h>
+#include <QProcess>
 
 SpotifyApiManager::SpotifyApiManager(QObject *parent)
     : QObject(parent), m_currentTrackIndex(-1)
 {
+    m_oauth.setAuthorizationUrl(
+        QUrl("https://accounts.spotify.com/authorize"));
+
+    m_oauth.setAccessTokenUrl(
+        QUrl("https://accounts.spotify.com/api/token"));
+
+    m_oauth.setClientIdentifier(
+        "6cc04a9b35e14400b53f27df3212c8cf");
+
+    m_replyHandler =
+        new QOAuthHttpServerReplyHandler(8888, this);
+
+    m_oauth.setReplyHandler(m_replyHandler);
+    qDebug() << "Reply handler callback:" << m_replyHandler->callback();
+
+    connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
+            [](const QUrl &url)
+    {
+        qDebug() << "AUTH URL:";
+        qDebug() << url.toString();
+    #ifdef Q_OS_LINUX
+
+            bool isWSL = false;
+
+            QFile versionFile("/proc/version");
+
+            if (versionFile.open(QIODevice::ReadOnly))
+            {
+                QString version =
+                    QString::fromUtf8(versionFile.readAll());
+
+                isWSL =
+                    version.contains("Microsoft", Qt::CaseInsensitive) ||
+                    version.contains("WSL", Qt::CaseInsensitive);
+            }
+
+            if (isWSL)
+            {
+                qDebug() << "WSL detected";
+                qDebug() << "Opening Windows browser";
+
+                QString command =
+                    QString("Start-Process '%1'")
+                        .arg(url.toString());
+
+                QProcess::startDetached(
+                    "powershell.exe",
+                    QStringList()
+                        << "-Command"
+                        << QString("Start-Process \"%1\"")
+                            .arg(url.toString()));
+            }
+            else
+            {
+                qDebug() << "Native Linux detected";
+
+                QDesktopServices::openUrl(url);
+            }
+
+    #else
+
+            qDebug() << "Windows/macOS detected";
+
+            QDesktopServices::openUrl(url);
+
+    #endif
+        });
+
+        connect(&m_oauth,
+                &QOAuth2AuthorizationCodeFlow::granted,
+                this,
+                [this]()
+        {
+            qDebug() << "SPOTIFY LOGIN SUCCESS";
+            qDebug() << "Access Token:";
+            qDebug() << m_oauth.token();
+        });
+
+        connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::granted,
+            this,
+            [this]()
+    {
+        qDebug() << "SPOTIFY LOGIN SUCCESS";
+
+        QNetworkRequest request(
+            QUrl("https://api.spotify.com/v1/me"));
+
+        request.setRawHeader(
+            "Authorization",
+            QString("Bearer %1")
+                .arg(m_oauth.token())
+                .toUtf8());
+
+        QNetworkReply *reply =
+            m_network.get(request);
+
+        connect(reply,
+                &QNetworkReply::finished,
+                [reply]()
+        {
+            qDebug() << reply->readAll();
+            reply->deleteLater();
+        });
+    });
+
+    connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::requestFailed,
+            this,
+            [](QAbstractOAuth::Error error)
+    {
+        qDebug() << "OAuth Request Failed:" << error;
+    });
 }
 
 QString SpotifyApiManager::loadApiKey()
@@ -224,6 +342,16 @@ void SpotifyApiManager::selectTrack(int index)
 
     emit selectedTrackChanged();
     loadLyrics(m_tracks[index].id);
+}
+
+void SpotifyApiManager::login()
+{
+    qDebug() << "Starting Spotify OAuth";
+
+    m_oauth.setScope(
+        "user-read-email");
+
+    m_oauth.grant();
 }
 
 QStringList SpotifyApiManager::lyricList() const { return m_lyricList; }
