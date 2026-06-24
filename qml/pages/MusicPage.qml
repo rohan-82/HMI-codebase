@@ -12,6 +12,7 @@ Item {
     // Virtual Keyboard Target Configuration State Variables
     property bool showKeyboard: false
     property var activeInputTarget: null
+    property bool userSeeking: false
 
     // Helper property to fetch dynamic theme paths cleanly across all components
     readonly property string iconPathPrefix: "qrc:/assets/icons/" + (Colors.dayNightMode === "day" ? "Light" : "Dark") + "/MusicPage/"
@@ -39,19 +40,62 @@ Item {
         }
     }
 
+    function playPause() {
+        if (mediaSourceTab === 1)
+            spotifyApi.playPause()
+        else
+            musicPlayer.togglePlayback()
+    }
+
+    function nextTrack() {
+        if (mediaSourceTab === 1)
+            spotifyApi.nextTrack()
+        else
+            musicPlayer.nextTrack()
+    }
+
+    function previousTrack() {
+        if (mediaSourceTab === 1)
+            spotifyApi.previousTrack()
+        else
+            musicPlayer.previousTrack()
+    }
+
+    readonly property bool currentPlayingState:
+        mediaSourceTab === 1
+        ? spotifyApi.isPlaying
+        : musicPlayer.isPlaying
+
+    readonly property int currentDuration:
+        mediaSourceTab === 1
+        ? spotifyApi.duration
+        : musicPlayer.duration
+
+    readonly property int currentPosition:
+        mediaSourceTab === 1
+        ? spotifyApi.position
+        : musicPlayer.position
+
+    function formatTime(ms)
+    {
+        let totalSeconds = Math.floor(ms / 1000)
+        let minutes = Math.floor(totalSeconds / 60)
+        let seconds = totalSeconds % 60
+
+        return minutes + ":" +
+            (seconds < 10 ? "0" : "") +
+            seconds
+    }
+
     // =====================================================
     // HARDCODED TRANSLATION DICTIONARY
     // =====================================================
-    readonly property var translations: ({
+    readonly property var translations: {
         "local":            { "en": "Local",            "de": "Lokal",                  "es": "Local" },
         "spotify":          { "en": "Spotify",          "de": "Spotify",                "es": "Spotify" },
         "lyrics":           { "en": "Lyrics",           "de": "Liedtext",               "es": "Lírica" },
         "media_hub":        { "en": "Media Hub",        "de": "Medien-Hub",             "es": "Centro de Medios" },
-<<<<<<< HEAD
-        "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "dispositivo Bluetooth" },
-=======
         "source_device":    { "en": "Bluetooth Device", "de": "Bluetooth-Gerät",        "es": "Dispositivo Bluetooth" },
->>>>>>> a184f8f90aa8c79b049db4eb371a631cd8266f59
         "switch":           { "en": "Switch",           "de": "Wechseln",               "es": "Cambiar" },
         "track":            { "en": "Track",            "de": "Titel",                  "es": "Pista" },
         "status":           { "en": "Status",           "de": "Status",                 "es": "Estado" },
@@ -66,7 +110,7 @@ Item {
         "search_spotify":   { "en": "Search Spotify...",       "de": "Spotify durchsuchen...",          "es": "Buscar en Spotify..." },
         "spotify_fallback": { "en": "No matches. Search Spotify instead?", "de": "Keine Treffer. Stattdessen Spotify durchsuchen?", "es": "Sin coincidencias. ¿Quieres buscar en Spotify?" },
         "queue_title":      { "en": "Playback Queue",   "de": "Wiedergabewarteschlange", "es": "Cola de Reproducción" }
-    })
+    }
 
     Row {
         anchors.fill: parent
@@ -227,9 +271,23 @@ Item {
                                 width: parent.width
                                 anchors.top: parent.top
                                 from: 0
-                                to: musicPlayer.duration
-                                value: musicPlayer.position
-                                onMoved: musicPlayer.seek(value)
+                                to: currentDuration
+                                value: currentPosition
+                                onPressedChanged: {
+                                    if (pressed)
+                                    {
+                                        userSeeking = true
+                                    }
+                                    else
+                                    {
+                                        userSeeking = false
+
+                                        if (mediaSourceTab === 1)
+                                            spotifyApi.seek(value)
+                                        else
+                                            musicPlayer.seek(value)
+                                    }
+                                }
 
                                 background: Rectangle {
                                     x: progressSlider.leftPadding
@@ -264,13 +322,13 @@ Item {
                             Text {
                                 id: startTimeText
                                 anchors.left: progressSlider.left; anchors.top: progressSlider.bottom; anchors.topMargin: 2
-                                text: musicPlayer.currentTime; color: Colors.textSecondary; font.family: Typography.family; font.pixelSize: Typography.bodySmall
+                                text: formatTime(currentPosition); color: Colors.textSecondary; font.family: Typography.family; font.pixelSize: Typography.bodySmall
                             }
 
                             Text {
                                 id: endTimeText
                                 anchors.right: progressSlider.right; anchors.top: progressSlider.bottom; anchors.topMargin: 2
-                                text: musicPlayer.totalTime; color: Colors.textSecondary; font.family: Typography.family; font.pixelSize: Typography.bodySmall
+                                text: formatTime(currentDuration); color: Colors.textSecondary; font.family: Typography.family; font.pixelSize: Typography.bodySmall
                             }
                         }
 
@@ -289,7 +347,7 @@ Item {
                                     anchors.centerIn: parent; width: 20; height: 20
                                     source: iconPathPrefix + "previous.png"
                                 }
-                                MouseArea { id: prevMouse; anchors.fill: parent; onClicked: musicPlayer.previousTrack() }
+                                MouseArea { id: prevMouse; anchors.fill: parent; onClicked: previousTrack() }
                             }
 
                             Rectangle {
@@ -298,11 +356,11 @@ Item {
 
                                 Image {
                                     anchors.centerIn: parent; width: 26; height: 26
-                                    source: musicPlayer.isPlaying
+                                    source: currentPlayingState
                                         ? (iconPathPrefix + "pause.png")
                                         : (iconPathPrefix + "play.png")
                                 }
-                                MouseArea { anchors.fill: parent; onClicked: musicPlayer.togglePlayback() }
+                                MouseArea { anchors.fill: parent; onClicked: playPause() }
                             }
 
                             Rectangle {
@@ -315,7 +373,7 @@ Item {
                                     anchors.centerIn: parent; width: 20; height: 20
                                     source: iconPathPrefix + "next.png"
                                 }
-                                MouseArea { id: nextMouse; anchors.fill: parent; onClicked: musicPlayer.nextTrack() }
+                                MouseArea { id: nextMouse; anchors.fill: parent; onClicked: nextTrack() }
                             }
                         }
 
@@ -613,7 +671,7 @@ Item {
                             color: swapMouse.pressed ? Colors.surfacePressed : Colors.surfaceRaised
                             border.width: 1; border.color: Colors.borderWarm
                             Text { anchors.centerIn: parent; text: musicPageRoot.translations["switch"][Typography.currentLanguage]; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodySmall; font.bold: true }
-                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: { bluetoothManager.scanDevices(); musicPageRoot.showBluetoothPopup = true } }
+                            MouseArea { id: swapMouse; anchors.fill: parent; onClicked: { spotifyApi.login() } }
                         }
                     }
                 }

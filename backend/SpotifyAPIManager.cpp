@@ -9,10 +9,137 @@
 #include <QUrl>
 #include <QDebug>
 #include <QUrlQuery>
+#include <QDesktopServices>
+#include <QtNetworkAuth/qoauth2authorizationcodeflow.h>
+#include <QtNetworkAuth/qoauthhttpserverreplyhandler.h>
+#include <QProcess>
 
 SpotifyApiManager::SpotifyApiManager(QObject *parent)
     : QObject(parent), m_currentTrackIndex(-1)
 {
+    m_oauth.setAuthorizationUrl(
+        QUrl("https://accounts.spotify.com/authorize"));
+
+    m_oauth.setAccessTokenUrl(
+        QUrl("https://accounts.spotify.com/api/token"));
+
+    m_oauth.setClientIdentifier(
+        "6cc04a9b35e14400b53f27df3212c8cf");
+
+    m_replyHandler =
+        new QOAuthHttpServerReplyHandler(8888, this);
+
+    m_oauth.setReplyHandler(m_replyHandler);
+    qDebug() << "Reply handler callback:" << m_replyHandler->callback();
+
+    connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
+            [](const QUrl &url)
+    {
+        qDebug() << "AUTH URL:";
+        qDebug() << url.toString();
+    #ifdef Q_OS_LINUX
+
+            bool isWSL = false;
+
+            QFile versionFile("/proc/version");
+
+            if (versionFile.open(QIODevice::ReadOnly))
+            {
+                QString version =
+                    QString::fromUtf8(versionFile.readAll());
+
+                isWSL =
+                    version.contains("Microsoft", Qt::CaseInsensitive) ||
+                    version.contains("WSL", Qt::CaseInsensitive);
+            }
+
+            if (isWSL)
+            {
+                qDebug() << "WSL detected";
+                qDebug() << "Opening Windows browser";
+
+                QString command =
+                    QString("Start-Process '%1'")
+                        .arg(url.toString());
+
+                QProcess::startDetached(
+                    "powershell.exe",
+                    QStringList()
+                        << "-Command"
+                        << QString("Start-Process \"%1\"")
+                            .arg(url.toString()));
+            }
+            else
+            {
+                qDebug() << "Native Linux detected";
+
+                QDesktopServices::openUrl(url);
+            }
+
+    #else
+
+            qDebug() << "Windows/macOS detected";
+
+            QDesktopServices::openUrl(url);
+
+    #endif
+        });
+
+        connect(&m_oauth,
+                &QOAuth2AuthorizationCodeFlow::granted,
+                this,
+                [this]()
+        {
+            qDebug() << "SPOTIFY LOGIN SUCCESS";
+            qDebug() << "Access Token:";
+            qDebug() << m_oauth.token();
+        });
+
+        connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::granted,
+            this,
+            [this]()
+    {
+        qDebug() << "SPOTIFY LOGIN SUCCESS";
+        getCurrentTrack();
+        m_spotifyTimer.start(1000);
+
+        qDebug() << "Spotify polling started";
+
+        QNetworkRequest request(
+            QUrl("https://api.spotify.com/v1/me"));
+
+        request.setRawHeader(
+            "Authorization",
+            QString("Bearer %1")
+                .arg(m_oauth.token())
+                .toUtf8());
+
+        QNetworkReply *reply =
+            m_network.get(request);
+
+        connect(reply,
+                &QNetworkReply::finished,
+                [reply]()
+        {
+            qDebug() << reply->readAll();
+            reply->deleteLater();
+        });
+    });
+
+    connect(&m_oauth,
+            &QOAuth2AuthorizationCodeFlow::requestFailed,
+            this,
+            [](QAbstractOAuth::Error error)
+    {
+        qDebug() << "OAuth Request Failed:" << error;
+    });
+
+    connect(&m_spotifyTimer,
+        &QTimer::timeout,
+        this,
+        &SpotifyApiManager::getCurrentTrack);
 }
 
 QString SpotifyApiManager::loadApiKey()
@@ -172,7 +299,7 @@ void SpotifyApiManager::searchTracks(const QString &query)
 }
 
 void SpotifyApiManager::loadLyrics(const QString &trackId)
-{
+{   
     QString apiKey = loadApiKey();
     QUrl url("https://spotify23.p.rapidapi.com/track_lyrics/");
 
@@ -224,6 +351,182 @@ void SpotifyApiManager::selectTrack(int index)
 
     emit selectedTrackChanged();
     loadLyrics(m_tracks[index].id);
+}
+
+void SpotifyApiManager::login()
+{
+    qDebug() << "Starting Spotify OAuth";
+
+    m_oauth.setScope(
+        "user-read-email "
+        "user-read-playback-state "
+        "user-modify-playback-state "
+        "user-read-currently-playing");
+
+    m_oauth.grant();
+}
+
+void SpotifyApiManager::getCurrentTrack()
+{   
+    QNetworkRequest request(
+        QUrl("https://api.spotify.com/v1/me/player/currently-playing"));
+
+    request.setRawHeader(
+        "Authorization",
+        QString("Bearer " + m_oauth.token()).toUtf8());
+
+    QNetworkReply *reply = m_network.get(request);
+
+    connect(reply, &QNetworkReply::finished,
+            this,
+            [this, reply]()
+    {
+        QByteArray response = reply->readAll();
+
+        QJsonDocument doc =
+            QJsonDocument::fromJson(response);
+
+        QJsonObject root =
+            doc.object();
+
+        QJsonObject item =
+            root["item"].toObject();
+
+        bool newPlaying =
+            root["is_playing"].toBool();
+
+        qint64 newPosition =
+            root["progress_ms"].toVariant().toLongLong();
+
+        qint64 newDuration =
+            item["duration_ms"].toVariant().toLongLong();
+
+        QString newTitle =
+            item["name"].toString();
+
+        QString newArtist =
+            item["artists"]
+                .toArray()[0]
+                .toObject()["name"]
+                .toString();
+
+        QString newImageUrl =
+            item["album"]
+                .toObject()["images"]
+                .toArray()[0]
+                .toObject()["url"]
+                .toString();
+            
+        if (newPlaying != m_isPlaying)
+        {
+            m_isPlaying = newPlaying;
+            emit playbackStateChanged();
+        }
+
+        if (newPosition != m_position ||
+            newDuration != m_duration)
+        {
+            m_position = newPosition;
+            m_duration = newDuration;
+
+            emit playbackPositionChanged();
+        }
+
+        if (newTitle != m_selectedTitle)
+        {
+            qDebug() << "Song changed";
+
+            m_selectedTitle = newTitle;
+            m_selectedArtist = newArtist;
+            m_selectedImageUrl = newImageUrl;
+
+            emit selectedTrackChanged();
+        }
+    });
+}
+
+void SpotifyApiManager::previousTrack()
+{
+    QNetworkRequest request(
+        QUrl("https://api.spotify.com/v1/me/player/previous"));
+
+    request.setRawHeader(
+        "Authorization",
+        QString("Bearer " + m_oauth.token()).toUtf8());
+
+    QNetworkReply *reply =
+        m_network.post(request, QByteArray());
+
+    connect(reply,
+            &QNetworkReply::finished,
+            reply,
+            &QNetworkReply::deleteLater);
+}
+
+void SpotifyApiManager::playPause()
+{
+    QString endpoint =
+        m_isPlaying
+        ? "https://api.spotify.com/v1/me/player/pause"
+        : "https://api.spotify.com/v1/me/player/play";
+
+    QNetworkRequest request{QUrl(endpoint)};
+
+    request.setRawHeader(
+        "Authorization",
+        QString("Bearer " + m_oauth.token()).toUtf8());
+
+    QNetworkReply *reply =
+        m_network.put(request, QByteArray());
+
+    connect(reply,
+            &QNetworkReply::finished,
+            reply,
+            &QNetworkReply::deleteLater);
+}
+
+void SpotifyApiManager::nextTrack()
+{
+    QNetworkRequest request(
+        QUrl("https://api.spotify.com/v1/me/player/next"));
+
+    request.setRawHeader(
+        "Authorization",
+        QString("Bearer %1")
+            .arg(m_oauth.token())
+            .toUtf8());
+
+    QNetworkReply *reply =
+        m_network.post(request, QByteArray());
+
+    connect(reply,
+            &QNetworkReply::finished,
+            [reply]()
+    {
+        reply->deleteLater();
+    });
+}
+
+void SpotifyApiManager::seek(qint64 position)
+{
+    QString url =
+        QString(
+            "https://api.spotify.com/v1/me/player/seek?position_ms=%1")
+            .arg(position);
+
+    QNetworkRequest request{QUrl(url)};
+
+    request.setRawHeader(
+        "Authorization",
+        QString("Bearer " + m_oauth.token()).toUtf8());
+
+    QNetworkReply *reply =
+        m_network.put(request, QByteArray());
+
+    connect(reply,
+            &QNetworkReply::finished,
+            reply,
+            &QNetworkReply::deleteLater);
 }
 
 QStringList SpotifyApiManager::lyricList() const { return m_lyricList; }
