@@ -1,5 +1,4 @@
 // Storing state variables for the vehicle and providing a way to update them from the simulator
-
 #ifndef VEHICLEDATA_H
 #define VEHICLEDATA_H
 
@@ -55,8 +54,22 @@ class VehicleData : public QObject
     Q_PROPERTY(QString warningTimestamp READ warningTimestamp WRITE setWarningTimestamp NOTIFY warningTimestampChanged)
     Q_PROPERTY(int historicalWarnings READ historicalWarnings WRITE setHistoricalWarnings NOTIFY historicalWarningsChanged)
 
+    Q_PROPERTY(bool simulationActive READ simulationActive WRITE setSimulationActive NOTIFY simulationActiveChanged)
+
+    Q_PROPERTY(int framesReceived READ framesReceived WRITE setFramesReceived NOTIFY framesReceivedChanged)
+    Q_PROPERTY(int invalidFrames READ invalidFrames WRITE setInvalidFrames NOTIFY invalidFramesChanged)
+    Q_PROPERTY(int checksumErrors READ checksumErrors WRITE setChecksumErrors NOTIFY checksumErrorsChanged)
+
 public:
     explicit VehicleData(QObject *parent = nullptr);
+
+public slots:
+    // Fully exposed execution handlers called directly by QML action buttons
+    void resetStatistics();
+    void exportLog();
+    void testConnection();
+
+public:
     // Getter functions
     int rpm() const;
     int speed() const;
@@ -92,6 +105,11 @@ public:
     bool communicationFault() const;
     bool lowRangeWarning() const;
     QString warningMessage() const;
+    bool simulationActive() const; 
+
+    int framesReceived() const;
+    int invalidFrames() const;
+    int checksumErrors() const;
 
     bool hasWarning() const
     {
@@ -143,13 +161,17 @@ public:
     void settripA(float tripA);
     void settripB(float tripB);
 
-
     void setLowBatteryWarning(bool lowBatteryWarning);
     void setMotorOverTempWarning(bool motorOverTempWarning);
     void setBatteryOverTempWarning(bool batteryOverTempWarning);
     void setCommunicationFault(bool communicationFault);
     void setLowRangeWarning(bool lowRangeWarning);
     void setWarningMessage(const QString &warningMessage);
+    void setSimulationActive(bool active);
+
+    void setFramesReceived(int framesReceived);
+    void setInvalidFrames(int invalidFrames);
+    void setChecksumErrors(int checksumErrors);
 
     void setHasWarning(bool value)
     {
@@ -208,7 +230,6 @@ signals:
     void tripAChanged();
     void tripBChanged();
     
-
     void lowBatteryWarningChanged();
     void motorOverTempWarningChanged();
     void batteryOverTempWarningChanged();
@@ -220,6 +241,11 @@ signals:
     void hasWarningChanged();
     void warningTimestampChanged();
     void historicalWarningsChanged();
+    void simulationActiveChanged();
+
+    void framesReceivedChanged();
+    void invalidFramesChanged();
+    void checksumErrorsChanged();
 
 private:
     // Member variables to store the current state of the vehicle
@@ -251,7 +277,6 @@ private:
     float m_tripA;
     float m_tripB;
 
-
     bool m_lowBatteryWarning;
     bool m_motorOverTempWarning;
     bool m_batteryOverTempWarning;
@@ -262,6 +287,12 @@ private:
     bool m_hasWarning = false;
     QString m_warningTimestamp;
     int m_historicalWarnings = 0;
+    bool m_simulationActive = true;
+
+    int m_framesReceived;
+    int m_invalidFrames ;
+    int m_checksumErrors;
+    
 };
 
 #endif

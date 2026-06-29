@@ -3,7 +3,14 @@
 
 #include <QObject>
 #include <QNetworkAccessManager>
+#include <QList>
+#include <QStringList>
+#include <QVariantList>
+#include <QVariantMap>
 #include <QVector>
+#include <QtNetworkAuth/qoauth2authorizationcodeflow.h>
+#include <QtNetworkAuth/qoauthhttpserverreplyhandler.h>
+#include <QTimer>
 
 struct SpotifyTrack
 {
@@ -33,14 +40,32 @@ class SpotifyApiManager : public QObject
     Q_PROPERTY(QString selectedImageUrl READ selectedImageUrl NOTIFY selectedTrackChanged)
     Q_PROPERTY(QString selectedAlbum READ selectedAlbum NOTIFY selectedTrackChanged)
 
+    // Dedicated Queue Subsystem Properties
+    Q_PROPERTY(QStringList queueTitles READ queueTitles NOTIFY queueChanged)
+    Q_PROPERTY(int currentTrackIndex READ currentTrackIndex NOTIFY currentTrackIndexChanged)
+    Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY playbackStateChanged)
+    Q_PROPERTY(qint64 position READ position NOTIFY playbackPositionChanged)
+    Q_PROPERTY(qint64 duration READ duration NOTIFY playbackPositionChanged)
+    Q_PROPERTY(bool loggedIn READ loggedIn NOTIFY loggedInChanged)
+
 public:
     explicit SpotifyApiManager(QObject *parent = nullptr);
 
     Q_INVOKABLE void searchTracks(const QString &query);
     Q_INVOKABLE void loadLyrics(const QString &trackId);
     Q_INVOKABLE void selectTrack(int index);
-    QStringList trackTitles() const;
+    
+    // Type-safe structural interfaces matching front-end layouts
+    Q_INVOKABLE void addToQueue(int index);
+    Q_INVOKABLE void playQueueTrack(int index);
+    Q_INVOKABLE void login();
+    Q_INVOKABLE void getCurrentTrack();
+    Q_INVOKABLE void playPause();
+    Q_INVOKABLE void nextTrack();
+    Q_INVOKABLE void previousTrack();
+    Q_INVOKABLE void seek(qint64 position);
 
+    QStringList trackTitles() const;
     QVariantList tracks() const;
     QString currentLyric() const;
     QStringList lyricList() const;
@@ -50,29 +75,54 @@ public:
     QString selectedImageUrl() const;
     QString selectedAlbum() const;
 
+    // Queue read permissions properties
+    QStringList queueTitles() const;
+    int currentTrackIndex() const;
+    bool isPlaying() const { return m_isPlaying; }
+    qint64 position() const { return m_position; }
+    qint64 duration() const { return m_duration; }
+    void playTrack(const QString &trackId);
+    void getSpotifyQueue();
+    bool loggedIn() const { return m_loggedIn; }
+
 signals:
     void searchFinished(QString result);
     void searchResultsChanged();
     void currentLyricChanged();
     void lyricsChanged();
     void selectedTrackChanged();
+    void queueChanged();
+    void currentTrackIndexChanged();
+    void playbackStateChanged();
+    void playbackPositionChanged();
+    void loggedInChanged();
 
 private:
     QNetworkAccessManager m_network;
-
     QList<SpotifyTrack> m_tracks;
 
     QString loadApiKey();
     QVector<SpotifyLyricLine> m_lyrics;
-
     QStringList m_lyricList;
-
     QString m_currentLyric;
 
     QString m_selectedTitle;
     QString m_selectedArtist;
     QString m_selectedImageUrl;
     QString m_selectedAlbum;
+
+    // Core vector structures containing the playlist queues
+    QList<SpotifyTrack> m_queue;
+    int m_currentTrackIndex = -1;
+
+    QOAuth2AuthorizationCodeFlow m_oauth;
+    QOAuthHttpServerReplyHandler *m_replyHandler = nullptr;
+    QTimer m_spotifyTimer;
+
+    bool m_isPlaying = false;
+    qint64 m_position = 0;
+    qint64 m_duration = 0;
+    bool m_loggedIn = false;
 };
 
-#endif
+#endif // SPOTIFYAPIMANAGER_H

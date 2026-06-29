@@ -8,6 +8,8 @@
 #include <QFile>
 #include <QRegularExpression>
 #include <QVector>
+#include <QVariantList>
+#include <QVariantMap>
 
 struct LyricLine
 {
@@ -43,13 +45,14 @@ class LocalMusicPlayer : public QObject
 
     Q_PROPERTY(QString albumArtUrl READ albumArtUrl NOTIFY albumArtUrlChanged)
 
+    Q_PROPERTY(QStringList visibleLyrics READ visibleLyrics NOTIFY currentLyricChanged)
     Q_PROPERTY(QString previousLyric READ previousLyric NOTIFY currentLyricChanged)
     Q_PROPERTY(QString currentLyric READ currentLyric NOTIFY currentLyricChanged)
     Q_PROPERTY(QString nextLyric READ nextLyric NOTIFY currentLyricChanged)
     Q_PROPERTY(QStringList lyricList READ lyricList NOTIFY lyricsLoadedChanged)
     Q_PROPERTY(int currentLyricIndex READ currentLyricIndex NOTIFY currentLyricIndexChanged)
     
-    Q_PROPERTY(QStringList playlistTitles READ playlistTitles NOTIFY trackCountChanged)
+    Q_PROPERTY(QStringList playlistTitles READ playlistTitles NOTIFY queueChanged)
 
 public:
     explicit LocalMusicPlayer(QObject *parent = nullptr);
@@ -101,8 +104,12 @@ public:
     QString nextLyric() const;
     QStringList lyricList() const;
     int currentLyricIndex() const;
+    QStringList visibleLyrics() const;
 
     QStringList playlistTitles() const;
+    
+    // Background Metadata Matrix Accessor
+    Q_INVOKABLE QVariantList getAvailableTracksMatrix() const;
 
 signals:
     void trackTitleChanged();
@@ -129,6 +136,7 @@ signals:
     void currentLyricChanged();
     void lyricsLoadedChanged();
     void currentLyricIndexChanged();
+    void queueChanged();
     
 private:
     QMediaPlayer *m_player;
@@ -159,6 +167,17 @@ private:
     void updateCurrentLyric(qint64 position);
     QStringList m_lyricList;
     int m_currentLyricIndex = -1;
+
+    // Background Metadata Engine Storage Elements
+    struct TrackMetadataCache {
+        QString title;
+        QString artist;
+    };
+
+    QMediaPlayer *m_metaScannerPlayer = nullptr;
+    QVector<TrackMetadataCache> m_metadataCache;
+    QStringList m_scanQueue;
+    void startNextScan();
 };
 
-#endif
+#endif // LOCALMUSICPLAYER_H

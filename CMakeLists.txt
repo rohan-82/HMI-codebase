@@ -5,7 +5,7 @@ project(EV_HMI VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort Multimedia Network)
+find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort Multimedia Network NetworkAuth)
 
 qt_standard_project_setup()
 
@@ -20,6 +20,8 @@ qt_add_executable(EV_HMI
     backend/SerialManager.cpp
     backend/TelemetryLogger.cpp
     backend/SpotifyAPIManager.cpp
+    backend/BluetoothManager.cpp
+    backend/DummyBluetoothManager.cpp
 )
 
 target_include_directories(EV_HMI PRIVATE
@@ -53,7 +55,8 @@ qt_add_qml_module(EV_HMI
 
 
         qml/components/home-panels/DistancePanel.qml
-        qml/components/home-panels/SpeedometerPanel.qml
+        qml/components/home-panels/SpeedometerPanel120.qml
+        qml/components/home-panels/SpeedometerPanel200.qml
         qml/components/home-panels/DriveModePanel.qml
         qml/components/home-panels/VehicleStatusPanel.qml
         qml/components/home-panels/SystemStatusPanel.qml
@@ -63,6 +66,14 @@ qt_add_qml_module(EV_HMI
         qml/pages/MusicPage.qml
         qml/pages/SettingsPage.qml
         qml/pages/DiagnosticsPage.qml
+
+        qml/pages/engineer/OverviewPage.qml
+        qml/pages/engineer/TelemetryPage.qml
+        qml/pages/engineer/ThermalPage.qml
+        qml/pages/engineer/PowertrainPage.qml
+        qml/pages/engineer/CommsPage.qml
+        qml/pages/engineer/FaultsPage.qml
+    
 
         qml/themes/Colors.qml
         qml/themes/Typography.qml
@@ -74,7 +85,13 @@ qt_add_resources(EV_HMI "assets"
     PREFIX "/"
 
     FILES
+
+    #Boot
+        assets/Boot/Splash-screen.mp4
+        assets/Boot/RickRoll.mp4
+    #Music
         assets/music/placeholder/default_cover.png
+        assets/icons/spotify.png
     #Dark Theme
         #Universal
         assets/icons/Dark/Universal/home-main.png
@@ -192,11 +209,17 @@ qt_add_resources(EV_HMI "assets"
         assets/icons/Light/SettingsPage/about.png
 
     # Fonts
-        assets/fonts/Rajdhani-Regular.ttf
-        assets/fonts/Rajdhani-Medium.ttf
-        assets/fonts/Rajdhani-Bold.ttf
-        assets/fonts/Rajdhani-Light.ttf
-        assets/fonts/Rajdhani-SemiBold.ttf
+        assets/fonts/Rajdhani/Rajdhani-Regular.ttf
+        assets/fonts/Rajdhani/Rajdhani-Medium.ttf
+        assets/fonts/Rajdhani/Rajdhani-Bold.ttf
+        assets/fonts/Rajdhani/Rajdhani-Light.ttf
+        assets/fonts/Rajdhani/Rajdhani-SemiBold.ttf
+        assets/fonts/Orbitron/Orbitron-Black.ttf
+        assets/fonts/Orbitron/Orbitron-Bold.ttf
+        assets/fonts/Orbitron/Orbitron-ExtraBold.ttf
+        assets/fonts/Orbitron/Orbitron-Medium.ttf
+        assets/fonts/Orbitron/Orbitron-Regular.ttf
+        assets/fonts/Orbitron/Orbitron-SemiBold.ttf
 
 )
 
@@ -209,4 +232,5 @@ target_link_libraries(EV_HMI
         Qt6::SerialPort
         Qt6::Multimedia
         Qt6::Network
+        Qt6::NetworkAuth
 )

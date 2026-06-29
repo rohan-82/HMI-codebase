@@ -4,7 +4,21 @@ import EvHmi
 BaseCard {
     id: root
 
-    title: "SYSTEM STATUS"
+    // FIXED: Dynamically switches card title based on global language selection
+    title: root.translations["title"][Typography.currentLanguage]
+
+    // =====================================================
+    // LOCALIZATION DICTIONARY
+    // =====================================================
+    readonly property var translations: {
+        "title":      { "en": "System Status", "de": "Systemstatus",      "es": "Estado del Sistema" },
+        "battery":    { "en": "Battery",       "de": "Batterie",          "es": "Batería" },
+        "motor":      { "en": "Motor",         "de": "Motor",             "es": "Motor" },
+        "controller": { "en": "Controller",    "de": "Steuergerät",       "es": "Controlador" },
+        "tires":      { "en": "Tires",         "de": "Reifen",            "es": "Neumáticos" },
+        "ok":         { "en": "OK",            "de": "OK",                "es": "OK" },
+        "fault":      { "en": "FAULT",         "de": "FEHLER",            "es": "FALLO" }
+    }
 
     // Unified 2x2 layout wrapper centered vertically inside the panel card
     Grid {
@@ -17,25 +31,26 @@ BaseCard {
         anchors.verticalCenter: parent.verticalCenter
         
         columns: 2
-        columnSpacing: 12 * Theme.scale // FIXED: Fixed typo from column+spacing
+        columnSpacing: 12 * Theme.scale 
         rowSpacing: 10 * Theme.scale
 
         Repeater {
+            // FIXED: Modified the string layout definitions into dictionary element keys to map correctly
             model: [
                 {
-                    label: "Battery",
+                    labelKey: "battery",
                     ok: (typeof vehicleData.batteryOverTempWarning !== 'undefined') ? !vehicleData.batteryOverTempWarning : true
                 },
                 {
-                    label: "Motor",
+                    labelKey: "motor",
                     ok: (typeof vehicleData.motorOverTempWarning !== 'undefined') ? !vehicleData.motorOverTempWarning : true
                 },
                 {
-                    label: "Controller",
+                    labelKey: "controller",
                     ok: (typeof vehicleData.communicationFault !== 'undefined') ? !vehicleData.communicationFault : true
                 },
                 {
-                    label: "Tires",
+                    labelKey: "tires",
                     ok: (typeof vehicleData.lowBatteryWarning !== 'undefined') ? !vehicleData.lowBatteryWarning : true
                 }
             ]
@@ -47,20 +62,10 @@ BaseCard {
                 radius: 6 * Theme.scale
                 color: Qt.rgba(1, 1, 1, 0.03) 
 
-                // Label Text (Left-Aligned)
-                Text {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 12 * Theme.scale
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    text: modelData.label
-                    color: Colors.textSecondary
-                    font.family: Typography.family
-                    font.pixelSize: Typography.bodyMedium
-                }
-
-                // Status Group: Dot indicator + Status string (Right-Aligned)
+                // 1. Status Group: Dot indicator + Status string (Right-Aligned)
+                // Declared first in code so the label element can look up its ID
                 Row {
+                    id: statusGroup
                     anchors.right: parent.right
                     anchors.rightMargin: 12 * Theme.scale
                     anchors.verticalCenter: parent.verticalCenter
@@ -79,13 +84,29 @@ BaseCard {
                     // Dynamic Status Text Readout
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: modelData.ok ? "OK" : "FAULT"
+                        text: modelData.ok ? root.translations["ok"][Typography.currentLanguage] : root.translations["fault"][Typography.currentLanguage]
                         color: modelData.ok ? Colors.accentEco : Colors.critical
 
                         font.family: Typography.family
                         font.pixelSize: Typography.bodyMedium
                         font.bold: true
                     }
+                }
+
+                // 2. Label Text (Left-Aligned, safely bounded on the right edge)
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 12 * Theme.scale
+                    anchors.right: statusGroup.left          // FIX: Prevents text from expanding past the status group
+                    anchors.rightMargin: 8 * Theme.scale     // FIX: Sets a clear gap buffer between text fields
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    text: root.translations[modelData.labelKey][Typography.currentLanguage]
+                    color: Colors.textSecondary
+                    font.family: Typography.family
+                    font.pixelSize: Typography.bodyMedium
+                    
+                    elide: Text.ElideRight                   // FIX: Drops an ellipsis if font styles or translations overflow bounds
                 }
             }
         }
