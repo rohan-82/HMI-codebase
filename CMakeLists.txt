@@ -5,7 +5,7 @@ project(EV_HMI VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort Multimedia Network)
+find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort Multimedia Network NetworkAuth)
 
 qt_standard_project_setup()
 
@@ -231,4 +231,5 @@ target_link_libraries(EV_HMI
         Qt6::SerialPort
         Qt6::Multimedia
         Qt6::Network
+        Qt6::NetworkAuth
 )
