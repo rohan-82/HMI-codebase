@@ -41,24 +41,54 @@ Item {
     }
 
     function playPause() {
-        if (mediaSourceTab === 1)
+        if (mediaSourceTab === 1) {
+
+            if (musicPlayer.isPlaying)
+                musicPlayer.pause()
+
             spotifyApi.playPause()
-        else
+
+        } else {
+
+            if (spotifyApi.isPlaying)
+                spotifyApi.playPause()
+
             musicPlayer.togglePlayback()
+        }
     }
 
     function nextTrack() {
-        if (mediaSourceTab === 1)
+        if (mediaSourceTab === 1) {
+
+            if (musicPlayer.isPlaying)
+                musicPlayer.pause()
+
             spotifyApi.nextTrack()
-        else
+
+        } else {
+
+            if (spotifyApi.isPlaying)
+                spotifyApi.playPause()
+
             musicPlayer.nextTrack()
+        }
     }
 
     function previousTrack() {
-        if (mediaSourceTab === 1)
+        if (mediaSourceTab === 1) {
+
+            if (musicPlayer.isPlaying)
+                musicPlayer.pause()
+
             spotifyApi.previousTrack()
-        else
+
+        } else {
+
+            if (spotifyApi.isPlaying)
+                spotifyApi.playPause()
+
             musicPlayer.previousTrack()
+        }
     }
 
     readonly property bool currentPlayingState:
@@ -461,29 +491,20 @@ Item {
                         anchors.bottom: bottomControlsColumn.top
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        anchors.margins: 12
+                        anchors.margins: 8
 
                         visible: mediaSourceTab === 1 && !spotifyApi.loggedIn
 
                         Column {
                             anchors.centerIn: parent
-                            spacing: 24
+                            spacing: 12
 
-                            Rectangle {
+                            Image {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                source: "qrc:/assets/icons/spotify.png"
                                 width: 110
                                 height: 110
-                                radius: 55
-
-                                color: Colors.surfaceRaised
-                                border.width: 2
-                                border.color: Colors.borderActive
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "♫"
-                                    font.pixelSize: 46
-                                    color: Colors.accentCity
-                                }
+                                fillMode: Image.PreserveAspectFit
                             }
 
                             Text {
@@ -491,6 +512,7 @@ Item {
                                 text: "Connect your Spotify account"
                                 color: Colors.textPrimary
                                 font.pixelSize: Typography.titleLarge
+                                font.family: Typography.family
                                 font.bold: true
                             }
 
@@ -499,6 +521,7 @@ Item {
                                 text: "Log in to search, play and queue music."
                                 color: Colors.textSecondary
                                 font.pixelSize: Typography.bodyMedium
+                                font.family: Typography.family
                             }
 
                             Rectangle {
@@ -514,6 +537,7 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
+                                    font.family: Typography.family
                                     text: "Connect Spotify"
                                     color: "white"
                                     font.bold: true
@@ -1145,48 +1169,179 @@ Item {
         Item {
             anchors.fill: parent
 
-            Text { id: queueTitle; text: musicPageRoot.translations["queue_title"][Typography.currentLanguage]; anchors.top: parent.top; anchors.left: parent.left; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyLarge }
-            Rectangle { id: queueDivider; anchors.top: queueTitle.bottom; anchors.topMargin: 8; width: parent.width; height: 1; color: Colors.borderSubtle }
+            Text { 
+                id: queueTitle 
+                text: musicPageRoot.translations["queue_title"][Typography.currentLanguage] 
+                anchors.top: parent.top 
+                anchors.left: parent.left 
+                color: Colors.textPrimary 
+                font.family: Typography.family 
+                font.pixelSize: Typography.bodyLarge 
+            }
+            
+            Rectangle { 
+                id: queueDivider 
+                anchors.top: queueTitle.bottom 
+                anchors.topMargin: 8 
+                width: parent.width 
+                height: 1 
+                color: Colors.borderSubtle 
+            }
 
-            ListView {
-                id: queueList; anchors.top: queueDivider.bottom; anchors.topMargin: 8; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; clip: true; spacing: 4
-                model: musicPageRoot.mediaSourceTab === 0 ? musicPlayer.playlistTitles : (spotifyApi.queueTitles || [])
+            // ---------------- NOW PLAYING SECTION ----------------
+            Text {
+                id: nowPlayingLabel
+                text: "Now Playing"
+                color: Colors.textSecondary
+                font.family: Typography.family
+                font.pixelSize: Typography.bodySmall
+                font.bold: true
+                anchors.top: queueDivider.bottom
+                anchors.topMargin: 10
+                anchors.left: parent.left
+            }
 
-                delegate: Rectangle {
-                    width: queueList.width 
-                    height: 56
-                    
-                    readonly property bool isCurrentActive: musicPageRoot.mediaSourceTab === 0 
-                        ? (index === musicPlayer.currentTrackIndex - 1)
-                        : (index === spotifyApi.currentTrackIndex)
+            Rectangle {
+                id: nowPlayingBox
+                width: parent.width
+                height: 56
+                radius: 4
+                color: Colors.surfacePressed
+                border.width: 0.5
+                border.color: Colors.borderWarm
+                anchors.top: nowPlayingLabel.bottom
+                anchors.topMargin: 6
 
-                    color: isCurrentActive ? Colors.surfacePressed : Colors.surfaceRaised
-                    border.width: 0.5; border.color: Colors.borderWarm
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 10
 
-                    Row {
-                        anchors.fill: parent; anchors.margins: 8; spacing: 10
-                        Rectangle {
-                            width: 32; height: 32; radius: 4; color: Colors.surfacePressed
-                            Text { anchors.centerIn: parent; text: isCurrentActive ? "▶" : "♪"; color: Colors.textPrimary; font.family: Typography.family; font.pixelSize: Typography.bodyMedium }
-                        }
+                    Rectangle {
+                        width: 32
+                        height: 32
+                        radius: 4
+                        color: Colors.surfaceRaised
+
                         Text {
-                            anchors.verticalCenter: parent.verticalCenter; width: parent.width - 60; text: modelData; color: Colors.textPrimary; font.family: Typography.family
-                            font.pixelSize: isCurrentActive ? Typography.bodyMedium : Typography.bodySmall
-                            font.bold: isCurrentActive; elide: Text.ElideRight
+                            anchors.centerIn: parent
+                            text: "▶"
+                            color: Colors.textPrimary
+                            font.pixelSize: Typography.bodyMedium
                         }
                     }
-                    MouseArea { 
-                        anchors.fill: parent 
-                        onClicked: {
-                            if (musicPageRoot.mediaSourceTab === 0) {
-                                musicPlayer.playTrack(index)
-                            } else {
-                                spotifyApi.playQueueTrack(index)
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 60
+
+                        text: musicPageRoot.mediaSourceTab === 0
+                                ? musicPlayer.trackTitle
+                                : spotifyApi.selectedTitle
+
+                        color: Colors.textPrimary
+                        font.family: Typography.family
+                        font.pixelSize: Typography.bodyMedium
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+                }
+            }
+
+            Rectangle {
+                id: sectionDivider
+                width: parent.width
+                height: 1
+                color: Colors.borderSubtle
+                anchors.top: nowPlayingBox.bottom
+                anchors.topMargin: 10
+            }
+
+            Text {
+                id: upNextLabel
+                text: "Up Next"
+                color: Colors.textSecondary
+                font.family: Typography.family
+                font.pixelSize: Typography.bodySmall
+                font.bold: true
+                anchors.top: sectionDivider.bottom
+                anchors.topMargin: 10
+                anchors.left: parent.left
+            }
+
+
+            property var localUpNext: musicPlayer.playlistTitles.slice(musicPlayer.currentTrackIndex)
+            property var spotifyUpNext: (spotifyApi.queueTitles || [])
+            // ---------------- BOUNDED QUEUE LIST ----------------
+            ListView {
+                id: queueList
+                width: parent.width
+                
+                // Tight anchors lock the list directly beneath the header and align to the container bottom
+                anchors.top: upNextLabel.bottom
+                anchors.topMargin: 6
+                anchors.bottom: parent.bottom
+
+                clip: true
+                spacing: 4
+
+                model: musicPageRoot.mediaSourceTab === 0
+                    ? localUpNext
+                    : spotifyUpNext
+
+                delegate: Rectangle {
+                    width: queueList.width
+                    height: 48
+
+                    color: Colors.surfaceRaised
+                    border.width: 0.5
+                    border.color: Colors.borderWarm
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 10
+
+                        Rectangle {
+                            width: 24
+                            height: 24
+                            radius: 3
+                            color: Colors.surfacePressed
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "♪"
+                                color: Colors.textPrimary
                             }
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 50
+                            text: modelData
+                            color: Colors.textPrimary
+                            font.pixelSize: Typography.bodySmall
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: musicPageRoot.mediaSourceTab === 0
+
+                        onClicked: {
+
+                            if (spotifyApi.isPlaying)
+                                spotifyApi.playPause()
+
+                            musicPlayer.playTrack(index + musicPlayer.currentTrackIndex)
                         }
                     }
                 }
-                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
             }
         }
     }

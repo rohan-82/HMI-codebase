@@ -269,8 +269,8 @@ bool LocalMusicPlayer::shuffleEnabled() const { return m_shuffleEnabled; }
 bool LocalMusicPlayer::repeatEnabled() const { return m_repeatEnabled; }
 int LocalMusicPlayer::volume() const { return m_volume; }
 bool LocalMusicPlayer::muted() const { return m_muted; }
-void LocalMusicPlayer::play() { m_player->play(); }
-void LocalMusicPlayer::pause() { m_player->pause(); }
+// void LocalMusicPlayer::play() { m_player->play(); }
+// void LocalMusicPlayer::pause() { m_player->pause(); }
 QString LocalMusicPlayer::artistName() const { return m_artistName; }
 QString LocalMusicPlayer::albumName() const { return m_albumName; }
 QString LocalMusicPlayer::albumArtUrl() const { return m_albumArtUrl; }
@@ -278,6 +278,18 @@ void LocalMusicPlayer::togglePlayback() { if (isPlaying()) pause(); else play();
 void LocalMusicPlayer::seek(qint64 position) { m_player->setPosition(position); }
 void LocalMusicPlayer::toggleShuffle() { m_shuffleEnabled = !m_shuffleEnabled; emit shuffleEnabledChanged(); }
 void LocalMusicPlayer::toggleRepeat() { m_repeatEnabled = !m_repeatEnabled; emit repeatEnabledChanged(); }
+
+void LocalMusicPlayer::pause()
+{
+    if (m_player->playbackState() == QMediaPlayer::PlayingState)
+        m_player->pause();
+}
+
+void LocalMusicPlayer::play()
+{
+    if (m_player->playbackState() != QMediaPlayer::PlayingState)
+        m_player->play();
+}
 
 void LocalMusicPlayer::nextTrack()
 {
@@ -290,6 +302,9 @@ void LocalMusicPlayer::nextTrack()
     }
     loadTrack(m_currentIndex);
     play();
+    emit currentTrackIndexChanged();
+    emit trackTitleChanged();
+    emit queueChanged();
 }
 
 void LocalMusicPlayer::previousTrack()
